@@ -1,0 +1,3 @@
+class axi4_lite_master_packet extends uvm_sequence_item;
+
+endclass : axi4_lite_master_packet

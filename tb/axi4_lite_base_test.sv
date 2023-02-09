@@ -10,7 +10,7 @@ Description: Base test class
 class axi4_lite_base_test extends uvm_test;
     `uvm_component_utils(axi4_lite_base_test);
 
-    
+
 
     //  Constructor: new
     function new(string name = "axi4_lite_base_test", uvm_component parent);
@@ -24,16 +24,11 @@ class axi4_lite_base_test extends uvm_test;
     //  Function: end_of_elaboration_phase
     extern function void end_of_elaboration_phase(uvm_phase phase);
 
-    //  Function: main_phase
-    extern task main_phase(uvm_phase phase);
-    
 endclass: axi4_lite_base_test
 
 
 function void axi4_lite_base_test::build_phase(uvm_phase phase);
-    /*  note: Do not call super.build_phase() from any class that is extended from an UVM base class!  */
-    /*  For more information see UVM Cookbook v1800.2 p.503  */
-    // super.build_phase(phase);
+    super.build_phase(phase);
 endfunction: build_phase
 
 function void axi4_lite_base_test::end_of_elaboration_phase(uvm_phase phase);
@@ -41,7 +36,4 @@ function void axi4_lite_base_test::end_of_elaboration_phase(uvm_phase phase);
     uvm_top.print_topology();
 endfunction: end_of_elaboration_phase
 
-
-task axi4_lite_base_test::main_phase(uvm_phase phase);
-endtask: main_phase
 

@@ -9,7 +9,7 @@ Description: Sequencer that will manage the sequences
 of the AXI4 Lite
 ************************************************/
 class axi4_lite_wr_addr_master_sequence extends axi4_lite_base_sequence;
-    `uvm_object_utils(axi4_lite_wr_addr_master_sequence);
+    `uvm_object_utils(axi4_lite_wr_addr_master_sequence)
 
     //  Constructor: new
     function new(string name = "axi4_lite_wr_addr_master_sequence");
@@ -25,5 +25,5 @@ class axi4_lite_wr_addr_master_sequence extends axi4_lite_base_sequence;
 endclass: axi4_lite_wr_addr_master_sequence
 
 task axi4_lite_wr_addr_master_sequence::body();
-    `uvm_do_with(req, req.active_master == WR_ADDR)
+    `uvm_do_with(req, {req.active_channel == WR_ADDR;})
 endtask : body

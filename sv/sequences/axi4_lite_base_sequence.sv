@@ -8,7 +8,7 @@ mail: jmelquiadesgomes@gmail.com
 Description: Base Sequence class
 ************************************************/
 class axi4_lite_base_sequence extends uvm_sequence#(axi4_lite_packet);
-    `uvm_object_utils(axi4_lite_base_sequence);
+    `uvm_object_utils(axi4_lite_base_sequence)
 
     //  Constructor: new
     function new(string name = "axi4_lite_base_sequence");
@@ -43,7 +43,7 @@ task axi4_lite_base_sequence::pre_body();
     `endif
     
     if(phase != null) begin
-        phase.raise_objection(this, get_type_name())
+        phase.raise_objection(this, get_type_name());
         `uvm_info(get_type_name(), "Raised objection...", UVM_MEDIUM)        
     end
 endtask : pre_body
@@ -57,7 +57,7 @@ task axi4_lite_base_sequence::post_body();
     `endif
     
     if(phase != null) begin
-        phase.drop_objection(this, get_type_name())
+        phase.drop_objection(this, get_type_name());
         `uvm_info(get_type_name(), "Dropped objection...", UVM_MEDIUM)        
     end
-endtask : pre_body
+endtask : post_body

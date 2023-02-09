@@ -10,7 +10,7 @@ of the AXI4 Lite
 ************************************************/
 
 class axi4_lite_sequencer extends uvm_sequencer#(axi4_lite_packet);
-    `uvm_component_utils(axi4_lite_sequencer);
+    `uvm_component_utils(axi4_lite_sequencer)
 
     //  Constructor: new
     function new(string name = "axi4_lite_sequencer", uvm_component parent);

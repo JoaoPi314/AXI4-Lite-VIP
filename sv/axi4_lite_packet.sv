@@ -5,7 +5,7 @@ file: axi4_lite_packet.sv
 author: João Pedro Melquiades Gomes
 mail: jmelquiadesgomes@gmail.com
 
-Description: File containing all the transactions
+Description: File containing the base transaction
 that will be driven to the DUT (Slave or Master AXI4-Lite)
 ************************************************/
 typedef enum bit[1:0] {FULL, MSB_HALF, LSB_HALF, RANDOM} wstrb_types_t;
@@ -22,7 +22,7 @@ class axi4_lite_packet#(
     
     // Write data channel
     rand bit [P_DATA_WIDTH-1:0]     wdata;
-    rand bit [P_DATA_WIDTH/8-1:0]        wstrb;
+    rand bit [P_DATA_WIDTH/8-1:0]   wstrb;
 
     // Write response channel
     rand bit [2:0]                  bresp;
@@ -76,17 +76,13 @@ class axi4_lite_packet#(
         rresp == 'b0;
     }
 
-    function void update_wstrb();
-     	wstrb = {P_DATA_WIDTH/8{1'b0}};
-        case(strb_types)
-            FULL:       wstrb = {P_DATA_WIDTH/8{1'b1}};
-            MSB_HALF:   wstrb[P_DATA_WIDTH/8-1 : P_DATA_WIDTH/16] = {1'b1};
-            LSB_HALF:   wstrb[P_DATA_WIDTH/16-1 : 0] = {1'b1};
-            RANDOM:     ok = this.randomize(wstrb);
-        endcase
-        
-    endfunction : update_wstrb
-
+    /**
+    Function: update_wstrb
+    Description: After the randomization, this function will
+    look into the strb_types value and updates the strobe based
+    on this value.
+    */
+    extern function void update_wstrb();
 
     function void post_randomize();
         update_wstrb();
@@ -94,3 +90,14 @@ class axi4_lite_packet#(
 
 
 endclass : axi4_lite_packet
+
+
+function void axi4_lite_packet::update_wstrb();
+    wstrb = {P_DATA_WIDTH/8{1'b0}};
+    case(strb_types)
+        FULL:       wstrb = {P_DATA_WIDTH/8{1'b1}};
+        MSB_HALF:   wstrb[P_DATA_WIDTH/8-1 : P_DATA_WIDTH/16] = {1'b1};
+        LSB_HALF:   wstrb[P_DATA_WIDTH/16-1 : 0] = {1'b1};
+        RANDOM:     ok = this.randomize(wstrb);
+    endcase
+endfunction : update_wstrb

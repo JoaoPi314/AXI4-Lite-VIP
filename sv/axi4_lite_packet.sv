@@ -10,50 +10,40 @@ that will be driven to the DUT (Slave or Master AXI4-Lite)
 ************************************************/
 typedef enum bit[1:0] {FULL, MSB_HALF, LSB_HALF, RANDOM} wstrb_types_t;
 typedef enum bit[2:0] {WR_ADDR, WR_DATA, WR_RESP, RD_ADDR, RD_DATA} channels_t;
+typedef enum bit  {WAIT_READY, SEND_VALID_FIRST} handshake_t;
 
 class axi4_lite_packet#(
     P_DATA_WIDTH = 32,
     P_ADDR_WIDTH = 32
 ) extends uvm_sequence_item;
 
-    // Write address channel
-    rand bit [P_ADDR_WIDTH-1:0]     awaddr;
-    rand bit [2:0]                  awprot;
+    // Address channel
+    rand bit [P_ADDR_WIDTH-1:0]     addr;
+    rand bit [2:0]                  prot;
     
-    // Write data channel
-    rand bit [P_DATA_WIDTH-1:0]     wdata;
+    // Data channel
+    rand bit [P_DATA_WIDTH-1:0]     data;
+    rand bit [2:0]                  resp;
+    
     rand bit [P_DATA_WIDTH/8-1:0]   wstrb;
-
-    // Write response channel
-    rand bit [2:0]                  bresp;
-
-    // Read address channel
-    rand bit [P_ADDR_WIDTH-1:0]     araddr;
-    rand bit [2:0]                  arprot;
-
-    // Read data channel
-    rand bit [P_DATA_WIDTH-1:0]     rdata;
-    rand bit [2:0]                  rresp;
 
     // Control variables
     rand wstrb_types_t strb_types;
     rand channels_t active_channel;
+    rand handshake_t handshake_type;
 
   	// To avoid warnings
   	int ok;
   
     `uvm_object_utils_begin(axi4_lite_packet)
-        `uvm_field_int(awaddr, UVM_ALL_ON)
-        `uvm_field_int(awprot, UVM_ALL_ON)
-        `uvm_field_int(wdata, UVM_ALL_ON)
+        `uvm_field_int(addr, UVM_ALL_ON)
+        `uvm_field_int(prot, UVM_ALL_ON)
+        `uvm_field_int(data, UVM_ALL_ON)
         `uvm_field_int(wstrb, UVM_ALL_ON)
-        `uvm_field_int(bresp, UVM_ALL_ON)
-        `uvm_field_int(araddr, UVM_ALL_ON)
-        `uvm_field_int(arprot, UVM_ALL_ON)
-        `uvm_field_int(rdata, UVM_ALL_ON)
-        `uvm_field_int(rresp, UVM_ALL_ON)
+        `uvm_field_int(resp, UVM_ALL_ON)
         `uvm_field_enum(wstrb_types_t, strb_types, UVM_NOCOMPARE)
         `uvm_field_enum(channels_t, active_channel, UVM_NOCOMPARE)
+        `uvm_field_enum(handshake_t, handshake_type, UVM_NOCOMPARE)
     `uvm_object_utils_end
     
     function new(string name="axi4_lite_packet");
@@ -67,13 +57,11 @@ class axi4_lite_packet#(
     }
 
     constraint no_privilege_secure_data_access {
-        awprot == 3'b010;
-        arprot == 3'b010;
+        prot == 3'b010;
     }
 
     constraint default_resp{
-        bresp == 'b0;
-        rresp == 'b0;
+        resp == 'b0;
     }
 
     /**

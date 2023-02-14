@@ -5,8 +5,8 @@ file: axi4_lite_wr_addr_master_sequence.sv
 author: João Pedro Melquiades Gomes
 mail: jmelquiadesgomes@gmail.com
 
-Description: Sequencer that will manage the sequences
-of the AXI4 Lite
+Description: Sequence to send a Write Address packet to this
+channel
 ************************************************/
 class axi4_lite_wr_addr_master_sequence extends axi4_lite_base_sequence;
     `uvm_object_utils(axi4_lite_wr_addr_master_sequence)
@@ -25,5 +25,5 @@ class axi4_lite_wr_addr_master_sequence extends axi4_lite_base_sequence;
 endclass: axi4_lite_wr_addr_master_sequence
 
 task axi4_lite_wr_addr_master_sequence::body();
-    `uvm_do_with(req, {req.active_channel == WR_ADDR;})
+    `uvm_do_with(req, {req.active_channel == WR_ADDR; req.handshake_type == SEND_VALID_FIRST;})
 endtask : body

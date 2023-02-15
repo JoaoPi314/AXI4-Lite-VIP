@@ -27,6 +27,6 @@ endclass: axi4_lite_sequencer
 /*----------------------------------------------------------------------------*/
 /*  UVM Build Phases                                                          */
 /*----------------------------------------------------------------------------*/
-virtual function void axi4_lite_sequencer::build_phase(uvm_phase phase);
+function void axi4_lite_sequencer::build_phase(uvm_phase phase);
     super.build_phase(phase);
 endfunction: build_phase

@@ -42,6 +42,13 @@ class axi4_lite_driver extends uvm_driver#(axi4_lite_packet);
     */
     extern task drive_wr_data_channel();
     
+    /*
+    Task: drive_wr_resp_channel
+    This task will be responsible for drive the ready into the
+    write response channel of the AXI4 Lite
+    */
+    extern task drive_wr_resp_channel();
+
 endclass: axi4_lite_driver
 
 function void axi4_lite_driver::build_phase(uvm_phase phase);
@@ -58,6 +65,7 @@ task axi4_lite_driver::main_phase(uvm_phase phase);
     forever begin
         drive_wr_addr_channel();
         drive_wr_data_channel();
+        drive_wr_resp_channel();
     end
 endtask: main_phase
 
@@ -89,4 +97,20 @@ task axi4_lite_driver::drive_wr_data_channel();
     @(negedge vif.wready);
     vif.wvalid = 1'b0;
     seq_item_port.item_done();
-endtask : drive_wr_addr_channel
+endtask : drive_wr_data_channel
+
+
+task axi4_lite_driver::drive_wr_resp_channel();
+    seq_item_port.get_next_item(req);
+    `uvm_info(get_type_name(), $sformatf("Driver got a transaction: \n%s", req.sprint()), UVM_HIGH)
+    
+    if(req.handshake_type == WAIT_READY)
+        @(posedge vif.bvalid);
+
+    vif.bready = 1'b1;
+    
+    repeat(10) @(posedge vif.clk);
+
+    vif.bready = 1'b0;
+    seq_item_port.item_done();
+endtask : drive_wr_resp_channel

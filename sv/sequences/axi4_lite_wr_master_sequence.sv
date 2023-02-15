@@ -13,6 +13,8 @@ class axi4_lite_wr_master_sequence extends axi4_lite_base_sequence;
 
     axi4_lite_wr_addr_master_sequence waddr_seq;
     axi4_lite_wr_data_master_sequence wdata_seq;
+    axi4_lite_wr_resp_master_sequence wresp_seq;
+
 
     //  Constructor: new
     function new(string name = "axi4_lite_wr_master_sequence");
@@ -30,4 +32,5 @@ endclass: axi4_lite_wr_master_sequence
 task axi4_lite_wr_master_sequence::body();
     `uvm_do(waddr_seq)
     `uvm_do(wdata_seq)
+    `uvm_do(wresp_seq)
 endtask : body

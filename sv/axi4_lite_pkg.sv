@@ -24,6 +24,7 @@ package axi4_lite_pkg;
   	`include "./axi4_lite_base_sequence.sv"
   	`include "./axi4_lite_wr_addr_master_sequence.sv"
   	`include "./axi4_lite_wr_data_master_sequence.sv"
+    `include "./axi4_lite_wr_resp_master_sequence.sv"
   	`include "./axi4_lite_wr_master_sequence.sv"
 
   	`include "./axi4_lite_driver.sv"

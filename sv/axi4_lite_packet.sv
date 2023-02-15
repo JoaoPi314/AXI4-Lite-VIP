@@ -8,9 +8,6 @@ mail: jmelquiadesgomes@gmail.com
 Description: File containing the base transaction
 that will be driven to the DUT (Slave or Master AXI4-Lite)
 ************************************************/
-typedef enum bit[1:0] {FULL, MSB_HALF, LSB_HALF, RANDOM} wstrb_types_t;
-typedef enum bit[2:0] {WR_ADDR, WR_DATA, WR_RESP, RD_ADDR, RD_DATA} channels_t;
-typedef enum bit  {WAIT_READY, SEND_VALID_FIRST} handshake_t;
 
 class axi4_lite_packet#(
     P_DATA_WIDTH = 32,

@@ -16,7 +16,7 @@ package axi4_lite_pkg;
     typedef virtual axi4_lite_if.mst axi4_lite_vif;
     typedef enum bit[1:0] {FULL, MSB_HALF, LSB_HALF, RANDOM} wstrb_types_t;
     typedef enum bit[2:0] {WR_ADDR, WR_DATA, WR_RESP, RD_ADDR, RD_DATA} channels_t;
-    typedef enum bit  {WAIT_READY, SEND_VALID_FIRST} handshake_t;
+    typedef enum bit  {WAIT_SLAVE, SEND_FIRST} handshake_t;
     
     `include "./axi4_lite_packet.sv"
 

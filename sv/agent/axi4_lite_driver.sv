@@ -15,6 +15,9 @@ class axi4_lite_driver extends uvm_driver#(axi4_lite_packet);
 
     axi4_lite_vif vif;
 
+    semaphore pipeline_lock = new(1);
+
+
     //  Constructor: new
     function new(string name = "axi4_lite_driver", uvm_component parent);
         super.new(name, parent);
@@ -28,11 +31,19 @@ class axi4_lite_driver extends uvm_driver#(axi4_lite_packet);
 
 
     /*
+    Task: pipeline_selector()
+    This task will check the sequence channel and call the
+    respective task to drive the data from sequence
+    */
+    extern task automatic pipeline_selector();
+
+
+    /*
     Task: drive_wr_addr_channel
     This task will be responsible for drive data into the
     write address channel of the AXI4 Lite
     */
-    extern task drive_wr_addr_channel();
+    extern task automatic drive_wr_addr_channel();
 
 
     /*
@@ -40,14 +51,14 @@ class axi4_lite_driver extends uvm_driver#(axi4_lite_packet);
     This task will be responsible for drive data into the
     write dataess channel of the AXI4 Lite
     */
-    extern task drive_wr_data_channel();
+    extern task automatic drive_wr_data_channel();
     
     /*
     Task: drive_wr_resp_channel
     This task will be responsible for drive the ready into the
     write response channel of the AXI4 Lite
     */
-    extern task drive_wr_resp_channel();
+    extern task automatic drive_wr_resp_channel();
 
 endclass: axi4_lite_driver
 
@@ -62,55 +73,73 @@ task axi4_lite_driver::main_phase(uvm_phase phase);
     @(negedge vif.arst_n);
     @(posedge vif.arst_n);
 
-    forever begin
-        drive_wr_addr_channel();
-        drive_wr_data_channel();
-        drive_wr_resp_channel();
-    end
+    fork
+        pipeline_selector();
+        pipeline_selector();
+        pipeline_selector();
+    join
 endtask: main_phase
 
+task axi4_lite_driver::pipeline_selector();
+    forever begin
+        pipeline_lock.get();
+        seq_item_port.get(req);
+        case(req.active_channel)
+            WR_ADDR: drive_wr_addr_channel();
+            WR_DATA: drive_wr_data_channel();
+            WR_RESP: drive_wr_resp_channel();
+        endcase
+    end 
+endtask : pipeline_selector
+
+
 task axi4_lite_driver::drive_wr_addr_channel();
-    seq_item_port.get_next_item(req);
-    `uvm_info(get_type_name(), $sformatf("Driver got a transaction: \n%s", req.sprint()), UVM_HIGH)
+    `uvm_info(get_type_name(), $sformatf("Driving WR_ADDR channel: \n%s", req.sprint()), UVM_HIGH)
     
     // This channel cannot wait for the ready to raise the valid
+    vif.driver_cb.awvalid <= 1'b1;
+    vif.driver_cb.awaddr <= req.addr;
 
-    vif.awvalid = 1'b1;
-    vif.awaddr = req.addr;
+    //Unlocks pipeline
+    pipeline_lock.put();
 
-    @(negedge vif.awready);
-    vif.awvalid = 1'b0;
-    seq_item_port.item_done();
+    wait(vif.driver_cb.awready === 1'b1);
+    @(posedge vif.clk);
+    vif.driver_cb.awvalid <= 1'b0;
+
 endtask : drive_wr_addr_channel
 
 task axi4_lite_driver::drive_wr_data_channel();
-    seq_item_port.get_next_item(req);
-    `uvm_info(get_type_name(), $sformatf("Driver got a transaction: \n%s", req.sprint()), UVM_HIGH)
-    
-    if(req.handshake_type == WAIT_READY)
-        @(posedge vif.wready);
+    `uvm_info(get_type_name(), $sformatf("Driving WR_DATA channel: \n%s", req.sprint()), UVM_HIGH)
 
-    vif.wvalid = 1'b1;
-    vif.wdata = req.data;
-    vif.wstrb = req.wstrb;
 
-    @(negedge vif.wready);
-    vif.wvalid = 1'b0;
-    seq_item_port.item_done();
+    // This channel cannot wait for the ready to raise the valid
+    vif.driver_cb.wvalid <= 1'b1;
+    vif.driver_cb.wdata <= req.data;
+    vif.driver_cb.wstrb <= req.wstrb;
+
+    //Unlocks pipeline
+    pipeline_lock.put();
+
+    wait(vif.driver_cb.wready === 1'b1);
+    @(posedge vif.clk);
+    vif.driver_cb.wvalid <= 1'b0;
 endtask : drive_wr_data_channel
 
 
 task axi4_lite_driver::drive_wr_resp_channel();
-    seq_item_port.get_next_item(req);
-    `uvm_info(get_type_name(), $sformatf("Driver got a transaction: \n%s", req.sprint()), UVM_HIGH)
-    
-    if(req.handshake_type == WAIT_READY)
-        @(posedge vif.bvalid);
+    `uvm_info(get_type_name(), $sformatf("Driving WR_RESP: \n%s", req.sprint()), UVM_HIGH)
 
-    vif.bready = 1'b1;
-    
-    repeat(10) @(posedge vif.clk);
+    // This channel can wait for the slave to raise the READY
+    if(req.handshake_type == WAIT_SLAVE)
+        @(posedge vif.driver_cb.bvalid);
 
-    vif.bready = 1'b0;
-    seq_item_port.item_done();
+    vif.driver_cb.bready <= 1'b1;
+    pipeline_lock.put();
+
+    // Temp. I will create a flag later to randomize the delay to low the ready resp
+    wait(vif.driver_cb.bvalid === 1'b1);
+    @(posedge vif.clk);
+
+    vif.driver_cb.bready <= 1'b0;
 endtask : drive_wr_resp_channel

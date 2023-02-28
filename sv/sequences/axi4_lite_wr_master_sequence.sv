@@ -15,6 +15,7 @@ class axi4_lite_wr_master_sequence extends axi4_lite_base_sequence;
     axi4_lite_wr_data_master_sequence wdata_seq;
     axi4_lite_wr_resp_master_sequence wresp_seq;
 
+    int count;
 
     //  Constructor: new
     function new(string name = "axi4_lite_wr_master_sequence");
@@ -27,10 +28,21 @@ class axi4_lite_wr_master_sequence extends axi4_lite_base_sequence;
     */
     extern task body();
 
+    extern function void response_handler(uvm_sequence_item response);
+
 endclass: axi4_lite_wr_master_sequence
 
 task axi4_lite_wr_master_sequence::body();
+
+    use_response_handler(1);
+    count = 0;
     `uvm_do(waddr_seq)
     `uvm_do(wdata_seq)
     `uvm_do(wresp_seq)
+    
 endtask : body
+
+
+function void axi4_lite_wr_master_sequence::response_handler(uvm_sequence_item response);
+    count++;
+endfunction : response_handler

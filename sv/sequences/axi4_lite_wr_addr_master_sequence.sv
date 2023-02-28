@@ -25,5 +25,5 @@ class axi4_lite_wr_addr_master_sequence extends axi4_lite_base_sequence;
 endclass: axi4_lite_wr_addr_master_sequence
 
 task axi4_lite_wr_addr_master_sequence::body();
-    `uvm_do_with(req, {req.active_channel == WR_ADDR; req.handshake_type == SEND_VALID_FIRST;})
+    `uvm_do_with(req, {req.active_channel == WR_ADDR; req.handshake_type == SEND_FIRST;})
 endtask : body

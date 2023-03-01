@@ -57,20 +57,12 @@ interface axi4_lite_if #(
         output araddr;
         output arprot;
         output rready;
-        input awready;
-        input wready;
-        input bvalid;
-        input bresp;
-        input arready;
-        input rvalid;
-        input rdata;
-        input rresp;
     endclocking : driver_cb
 
 
 
     // Modports
-    modport mst(clocking driver_cb, input clk, arst_n);
+    modport mst(clocking driver_cb, input clk, arst_n, awready, wready, bvalid, bresp, arready, rvalid, rdata, rresp);
     modport slv(input clk, arst_n, awvalid, awaddr, awprot, wvalid, wdata, wstrb, bready, arvalid, araddr, arprot, rready,
                 output awready, wready, bvalid, bresp, arready, rvalid, rdata, rresp);
 

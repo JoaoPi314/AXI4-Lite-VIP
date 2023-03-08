@@ -76,8 +76,9 @@ endtask : reset_phase
 
 task axi4_lite_master_driver::drive_wr_addr_channel();
     `uvm_info(get_type_name(), $sformatf("Driving WR_ADDR channel: \n%s", req.sprint()), UVM_HIGH)
-
-    @(posedge vif.clk iff (~(valid_transfers & lock_write)));
+    
+    if(valid_transfers)
+        @(posedge vif.clk iff (~lock_write));
 
     // This channel cannot wait for the ready to raise the valid
     vif.master_cb.awvalid <= 1'b1;
@@ -94,8 +95,9 @@ endtask : drive_wr_addr_channel
 task axi4_lite_master_driver::drive_wr_data_channel();
     `uvm_info(get_type_name(), $sformatf("Driving WR_DATA channel: \n%s", req.sprint()), UVM_HIGH)
 
-    @(posedge vif.clk iff (~(valid_transfers & lock_write)));
-
+    if(valid_transfers)
+        @(posedge vif.clk iff (~lock_write));
+        
     // This channel cannot wait for the ready to raise the valid
     vif.master_cb.wvalid <= 1'b1;
     vif.master_cb.wdata <= req.data;

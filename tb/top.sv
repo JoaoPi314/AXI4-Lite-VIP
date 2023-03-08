@@ -1,15 +1,38 @@
+
 module top;
 
-    `include "uvm_macros.svh"
-    import uvm_pkg::*;
+  `include "uvm_macros.svh"
+  import uvm_pkg::*;
+  import axi4_lite_pkg::*;
 
-    `include "../sv/axi4_lite_packet.sv"
+  logic clk;
+  logic arst_n;
+    
+  axi4_lite_if a4_lite_in(.clk(clk), .arst_n(arst_n));
+    
+  initial begin
+      clk = 1;
+      arst_n = 1;
+      #17ns arst_n = 0;
+      @(posedge clk);
+      arst_n = 1;
+  end
+      
+  initial begin
+      uvm_config_db#(virtual interface axi4_lite_if.mst)::set(uvm_root::get(), "*", "mst_vif", a4_lite_in);
+      uvm_config_db#(virtual interface axi4_lite_if.slv)::set(uvm_root::get(), "*", "slv_vif", a4_lite_in);
 
-    axi4_lite_packet p1;
+      $dumpfile("dump.vcd"); 
+      $dumpvars;
+  end
+  
+  initial begin
+    run_test("axi4_lite_base_test");
+  end
 
 
-    initial begin
-        p1 = new("p1");
-    end
-
+  always begin
+      #10ns clk = ~clk;
+  end
+  
 endmodule : top

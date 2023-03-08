@@ -3,7 +3,7 @@ class axi4_lite_agent extends uvm_agent;
 
     axi4_lite_agent_config agt_cfg;
 
-    axi4_lite_driver drv;
+    axi4_lite_base_driver drv;
     axi4_lite_sequencer sqr;
     
     function new(string name="axi4_lite_agent", uvm_component parent);
@@ -26,11 +26,12 @@ function void axi4_lite_agent::build_phase(uvm_phase phase);
     
     uvm_config_db#(bit)::set(this, "drv", "valid_transfers", agt_cfg.valid_transfers);
 
-    
     if(!agt_cfg.is_master)
-        set_type_override_by_type(axi4_lite_driver::get_type(), axi4_lite_slave_driver::get_type());
-    
-    drv = axi4_lite_driver::type_id::create("drv", this);
+        set_inst_override_by_type("*", axi4_lite_base_driver::get_type(), axi4_lite_slave_driver::get_type());
+    else
+        set_inst_override_by_type("*", axi4_lite_base_driver::get_type(), axi4_lite_master_driver::get_type());
+
+    drv = axi4_lite_base_driver::type_id::create("drv", this);
     sqr = axi4_lite_sequencer::type_id::create("sqr", this);
 endfunction : build_phase
 

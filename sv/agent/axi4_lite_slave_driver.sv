@@ -1,4 +1,4 @@
-class axi4_lite_slave_driver extends axi4_lite_driver;
+class axi4_lite_slave_driver extends axi4_lite_base_driver;
     `uvm_component_utils(axi4_lite_slave_driver)
 
 

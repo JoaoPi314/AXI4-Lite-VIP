@@ -78,7 +78,7 @@ task axi4_lite_master_driver::drive_wr_addr_channel();
     `uvm_info(get_type_name(), $sformatf("Driving WR_ADDR channel: \n%s", req.sprint()), UVM_HIGH)
     
     if(valid_transfers)
-        @(posedge vif.clk iff (~lock_write));
+        wait (lock_write == 1'b0);
 
     // This channel cannot wait for the ready to raise the valid
     vif.master_cb.awvalid <= 1'b1;
@@ -96,8 +96,8 @@ task axi4_lite_master_driver::drive_wr_data_channel();
     `uvm_info(get_type_name(), $sformatf("Driving WR_DATA channel: \n%s", req.sprint()), UVM_HIGH)
 
     if(valid_transfers)
-        @(posedge vif.clk iff (~lock_write));
-        
+        wait (lock_write == 1'b0);
+
     // This channel cannot wait for the ready to raise the valid
     vif.master_cb.wvalid <= 1'b1;
     vif.master_cb.wdata <= req.data;

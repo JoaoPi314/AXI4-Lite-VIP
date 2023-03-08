@@ -25,15 +25,22 @@ package axi4_lite_pkg;
     `include "./axi4_lite_sequencer.sv"
   	`include "./axi4_lite_base_sequence.sv"
   	`include "./axi4_lite_wr_addr_master_sequence.sv"
+  	`include "./axi4_lite_wr_addr_slave_sequence.sv"
   	`include "./axi4_lite_wr_data_master_sequence.sv"
+  	`include "./axi4_lite_wr_data_slave_sequence.sv"
     `include "./axi4_lite_wr_resp_master_sequence.sv"
+    `include "./axi4_lite_wr_resp_slave_sequence.sv"
   	`include "./axi4_lite_wr_master_sequence.sv"
+  	`include "./axi4_lite_wr_slave_sequence.sv"
 
-  	`include "./axi4_lite_driver.sv"
+  	`include "./axi4_lite_base_driver.sv"
+  	`include "./axi4_lite_master_driver.sv"
   	`include "./axi4_lite_slave_driver.sv"
     `include "./axi4_lite_agent_config.sv"
     `include "./axi4_lite_agent.sv"
 
-	`include "./axi4_lite_base_test.sv"  
+	  `include "./axi4_lite_base_test.sv" 
+	  `include "./axi4_lite_write_test.sv" 
+
 
 endpackage : axi4_lite_pkg

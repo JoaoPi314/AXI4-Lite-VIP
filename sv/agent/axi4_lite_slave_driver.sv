@@ -69,7 +69,7 @@ task axi4_lite_slave_driver::drive_wr_addr_channel();
 
 
     if(req.handshake_type == WAIT_TO_SEND) begin
-        @(posedge vif.awvalid);
+        @(posedge vif.clk iff (vif.awvalid === 1'b1));
     end
 
     vif.slave_cb.awready <= 1'b1;
@@ -88,7 +88,7 @@ task axi4_lite_slave_driver::drive_wr_data_channel();
     `uvm_info(get_type_name(), $sformatf("Driving WR_DATA channel: \n%s", req.sprint()), UVM_HIGH)
     
     if(req.handshake_type == WAIT_TO_SEND) begin
-        @(posedge vif.wvalid);
+        @(posedge vif.clk iff (vif.wvalid === 1'b1));
     end
 
     vif.slave_cb.wready <= 1'b1;

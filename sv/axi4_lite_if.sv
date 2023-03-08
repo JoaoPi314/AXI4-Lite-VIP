@@ -44,7 +44,7 @@ interface axi4_lite_if #(
     logic [2:0]                 rresp;
 
 
-    clocking driver_cb @ (posedge clk);
+    clocking master_cb @ (posedge clk);
         default input #1 output #1;
         output awvalid;
         output awaddr;
@@ -57,13 +57,23 @@ interface axi4_lite_if #(
         output araddr;
         output arprot;
         output rready;
-    endclocking : driver_cb
+    endclocking : master_cb
 
-
+    clocking slave_cb @ (posedge clk);
+        default input #1 output #1;
+        output awready;
+        output wready;
+        output bvalid;
+        output bresp;
+        output arready;
+        output rvalid;
+        output rdata;
+        output rresp;
+        output araddr;
+    endclocking : slave_cb
 
     // Modports
-    modport mst(clocking driver_cb, input clk, arst_n, awready, wready, bvalid, bresp, arready, rvalid, rdata, rresp);
-    modport slv(input clk, arst_n, awvalid, awaddr, awprot, wvalid, wdata, wstrb, bready, arvalid, araddr, arprot, rready,
-                output awready, wready, bvalid, bresp, arready, rvalid, rdata, rresp);
+    modport mst(clocking master_cb, input clk, arst_n, awready, wready, bvalid, bresp, arready, rvalid, rdata, rresp);
+    modport slv(clocking slave_cb, input clk, arst_n, awvalid, awaddr, awprot, wvalid, wdata, wstrb, bready, arvalid, araddr, arprot, rready);
 
 endinterface : axi4_lite_if

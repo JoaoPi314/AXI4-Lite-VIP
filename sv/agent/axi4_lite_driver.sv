@@ -13,14 +13,11 @@ multichannels in parallel.
 class axi4_lite_driver extends uvm_driver#(axi4_lite_packet);
     `uvm_component_utils(axi4_lite_driver)
 
-    axi4_lite_vif vif;
+    axi4_lite_mst_vif vif;
 
     semaphore pipeline_lock = new(1);
-
-    // Flags to lock new sequences of the same transaction type until finish current one
-    bit is_writing = 0;
-    bit is_reading = 0;
-
+    bit valid_transfers;
+    bit lock_write = 1'b0;
 
     //  Constructor: new
     function new(string name = "axi4_lite_driver", uvm_component parent);
@@ -29,6 +26,12 @@ class axi4_lite_driver extends uvm_driver#(axi4_lite_packet);
 
     //  Function: build_phase
     extern function void build_phase(uvm_phase phase);
+
+
+    //Task: reset_phase
+
+    extern virtual task reset_phase(uvm_phase phase);
+
 
     //  Task: main_phase
     extern task main_phase(uvm_phase phase);
@@ -47,7 +50,7 @@ class axi4_lite_driver extends uvm_driver#(axi4_lite_packet);
     This task will be responsible for drive data into the
     write address channel of the AXI4 Lite
     */
-    extern task automatic drive_wr_addr_channel();
+    extern virtual task automatic drive_wr_addr_channel();
 
 
     /*
@@ -55,23 +58,44 @@ class axi4_lite_driver extends uvm_driver#(axi4_lite_packet);
     This task will be responsible for drive data into the
     write dataess channel of the AXI4 Lite
     */
-    extern task automatic drive_wr_data_channel();
-    
+    extern virtual task automatic drive_wr_data_channel();
+
     /*
     Task: drive_wr_resp_channel
     This task will be responsible for drive the ready into the
     write response channel of the AXI4 Lite
     */
-    extern task automatic drive_wr_resp_channel();
+    extern virtual task automatic drive_wr_resp_channel();
 
 endclass: axi4_lite_driver
 
 function void axi4_lite_driver::build_phase(uvm_phase phase);
     super.build_phase(phase);
-    assert(uvm_config_db#(axi4_lite_vif)::get(this, "", "vif", vif))
+    assert(uvm_config_db#(axi4_lite_mst_vif)::get(this, "", "mst_vif", vif))
         else `uvm_fatal(get_type_name(), "Failed to get virtual interface")
+    assert(uvm_config_db#(bit)::get(this, "", "valid_transfers", valid_transfers))
+        else `uvm_fatal(get_type_name(), "Failed to get agent configuration")
 endfunction: build_phase
 
+
+task axi4_lite_driver::reset_phase(uvm_phase phase);
+    phase.raise_objection(this, "Reseting interface");
+    
+    vif.master_cb.awvalid <= 'b0;
+    vif.master_cb.awaddr <= 'b0;
+    vif.master_cb.awprot <= 'b0;
+    vif.master_cb.wvalid <= 'b0;
+    vif.master_cb.wdata <= 'b0;
+    vif.master_cb.wstrb <= 'b0;
+    vif.master_cb.bready <= 'b0;
+    vif.master_cb.arvalid <= 'b0;
+    vif.master_cb.araddr <= 'b0;
+    vif.master_cb.arprot <= 'b0;
+    vif.master_cb.rready <= 'b0;
+
+
+    phase.drop_objection(this, "Reseting interface - Done");
+endtask : reset_phase
 
 task axi4_lite_driver::main_phase(uvm_phase phase);
     @(negedge vif.arst_n);
@@ -99,40 +123,36 @@ endtask : pipeline_selector
 
 task axi4_lite_driver::drive_wr_addr_channel();
     `uvm_info(get_type_name(), $sformatf("Driving WR_ADDR channel: \n%s", req.sprint()), UVM_HIGH)
-    
-    while(is_writing) begin
-        @(posedge vif.clk);
-    end
+
+    @(posedge vif.clk iff (~(valid_transfers & lock_write)));
 
     // This channel cannot wait for the ready to raise the valid
-    vif.driver_cb.awvalid <= 1'b1;
-    vif.driver_cb.awaddr <= req.addr;
+    vif.master_cb.awvalid <= 1'b1;
+    vif.master_cb.awaddr <= req.addr;
 
     //Unlocks pipeline
     pipeline_lock.put();
 
     @(posedge vif.clk iff vif.awready === 1'b1);
-    vif.driver_cb.awvalid <= 1'b0;
+    vif.master_cb.awvalid <= 1'b0;
 
 endtask : drive_wr_addr_channel
 
 task axi4_lite_driver::drive_wr_data_channel();
     `uvm_info(get_type_name(), $sformatf("Driving WR_DATA channel: \n%s", req.sprint()), UVM_HIGH)
 
-    while(is_writing) begin
-        @(posedge vif.clk);
-    end
+    @(posedge vif.clk iff (~(valid_transfers & lock_write)));
 
     // This channel cannot wait for the ready to raise the valid
-    vif.driver_cb.wvalid <= 1'b1;
-    vif.driver_cb.wdata <= req.data;
-    vif.driver_cb.wstrb <= req.wstrb;
+    vif.master_cb.wvalid <= 1'b1;
+    vif.master_cb.wdata <= req.data;
+    vif.master_cb.wstrb <= req.wstrb;
 
     //Unlocks pipeline
     pipeline_lock.put();
 
     @(posedge vif.clk iff vif.wready === 1'b1);
-    vif.driver_cb.wvalid <= 1'b0;
+    vif.master_cb.wvalid <= 1'b0;
 endtask : drive_wr_data_channel
 
 
@@ -140,19 +160,17 @@ task axi4_lite_driver::drive_wr_resp_channel();
     `uvm_info(get_type_name(), $sformatf("Driving WR_RESP: \n%s", req.sprint()), UVM_HIGH)
 
     // This channel can wait for the slave to raise the READY
-    if(req.handshake_type == WAIT_SLAVE) begin
-        @(posedge vif.bvalid);
-        @(posedge vif.clk);
+    if(req.handshake_type == WAIT_TO_SEND) begin
+        @(posedge vif.clk iff vif.bvalid === 1'b1);
     end
-
-    is_writing = 1'b1;
     
-    vif.driver_cb.bready <= 1'b1;
+    lock_write = 1'b1;
+
+    vif.master_cb.bready <= 1'b1;
     pipeline_lock.put();
     // Temp. I will create a flag later to randomize the delay to low the ready resp
-
     @(posedge vif.clk iff vif.bvalid === 1'b1);
 
-    vif.driver_cb.bready <= 1'b0;
-    is_writing = 1'b0;
+    vif.master_cb.bready <= 1'b0;
+    lock_write = 1'b0;
 endtask : drive_wr_resp_channel

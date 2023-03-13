@@ -1,0 +1,9 @@
+tb/*.log
+tb/*.history
+tb/*.key
+tb/*.dump
+tb/*.diag
+tb/*.vcd
+tb/*.d/
+tb/*.shm/
+tb/.simvision/

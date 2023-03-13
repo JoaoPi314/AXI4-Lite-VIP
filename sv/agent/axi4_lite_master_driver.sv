@@ -77,9 +77,6 @@ endtask : reset_phase
 task axi4_lite_master_driver::drive_wr_addr_channel();
     `uvm_info(get_type_name(), $sformatf("Driving WR_ADDR channel: \n%s", req.sprint()), UVM_HIGH)
     
-    if(valid_transfers)
-        wait (lock_write == 1'b0);
-
     // This channel cannot wait for the ready to raise the valid
     vif.master_cb.awvalid <= 1'b1;
     vif.master_cb.awaddr <= req.addr;
@@ -94,9 +91,6 @@ endtask : drive_wr_addr_channel
 
 task axi4_lite_master_driver::drive_wr_data_channel();
     `uvm_info(get_type_name(), $sformatf("Driving WR_DATA channel: \n%s", req.sprint()), UVM_HIGH)
-
-    if(valid_transfers)
-        wait (lock_write == 1'b0);
 
     // This channel cannot wait for the ready to raise the valid
     vif.master_cb.wvalid <= 1'b1;
@@ -119,13 +113,10 @@ task axi4_lite_master_driver::drive_wr_resp_channel();
         @(posedge vif.clk iff vif.bvalid === 1'b1);
     end
     
-    lock_write = 1'b1;
-
     vif.master_cb.bready <= 1'b1;
-    pipeline_lock.put();
     // Temp. I will create a flag later to randomize the delay to low the ready resp
     @(posedge vif.clk iff vif.bvalid === 1'b1);
-
+    
     vif.master_cb.bready <= 1'b0;
-    lock_write = 1'b0;
+    pipeline_lock.put();
 endtask : drive_wr_resp_channel

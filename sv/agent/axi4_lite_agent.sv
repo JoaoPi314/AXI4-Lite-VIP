@@ -24,7 +24,8 @@ function void axi4_lite_agent::build_phase(uvm_phase phase);
     assert(uvm_config_db#(axi4_lite_agent_config)::get(this, "", "agt_cfg", this.agt_cfg))
     else `uvm_fatal(get_type_name(), "Failed to config master or slave agent")
     
-    uvm_config_db#(bit)::set(this, "drv", "valid_transfers", agt_cfg.valid_transfers);
+    uvm_config_db#(int)::set(this, "drv", "max_clks_to_handshake", agt_cfg.max_clks_to_handshake);
+
 
     if(!agt_cfg.is_master)
         set_inst_override_by_type("*", axi4_lite_base_driver::get_type(), axi4_lite_slave_driver::get_type());

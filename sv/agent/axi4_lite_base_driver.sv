@@ -16,8 +16,7 @@ class axi4_lite_base_driver extends uvm_driver#(axi4_lite_packet);
     axi4_lite_mst_vif vif;
 
     semaphore pipeline_lock = new(1);
-    bit valid_transfers;
-    bit lock_write = 1'b0;
+    int max_clks_to_handshake;
 
     //  Constructor: new
     function new(string name = "axi4_lite_base_driver", uvm_component parent);
@@ -68,7 +67,11 @@ endclass: axi4_lite_base_driver
 function void axi4_lite_base_driver::build_phase(uvm_phase phase);
     super.build_phase(phase);
     assert(uvm_config_db#(bit)::get(this, "", "valid_transfers", valid_transfers))
-        else `uvm_fatal(get_type_name(), "Failed to get agent configuration")
+        else `uvm_fatal(get_type_name(), "Failed to get agent configuration - valid transfers")
+
+    assert(uvm_config_db#(int)::get(this, "", "max_clks_to_handshake", max_clks_to_handshake))
+        else `uvm_fatal(get_type_name(), "Failed to get agent configuration - max_clks_to_handshake")
+
     assert(uvm_config_db#(axi4_lite_mst_vif)::get(this, "", "mst_vif", vif))
         else `uvm_fatal(get_type_name(), "Failed to get virtual interface")
 endfunction: build_phase
@@ -89,10 +92,21 @@ task axi4_lite_base_driver::pipeline_selector();
     forever begin
         pipeline_lock.get();
         seq_item_port.get(req);
-        case(req.active_channel)
-            WR_ADDR: drive_wr_addr_channel();
-            WR_DATA: drive_wr_data_channel();
-            WR_RESP: drive_wr_resp_channel();
-        endcase
+        fork
+            begin
+                case(req.active_channel)
+                    WR_ADDR: drive_wr_addr_channel();
+                    WR_DATA: drive_wr_data_channel();
+                    WR_RESP: drive_wr_resp_channel();
+                endcase
+            end
+
+            begin
+                
+                repeat(max_clks_to_handshake) @(posedge vif.clk);
+                `uvm_info(get_name(), $sformatf("I po esperei demais aqui e to baixando. %d", max_clks_to_handshake), UVM_NONE)
+            end
+        join_any
+        disable fork;
     end 
 endtask : pipeline_selector

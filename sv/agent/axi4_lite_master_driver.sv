@@ -58,17 +58,17 @@ endfunction: build_phase
 task axi4_lite_master_driver::reset_phase(uvm_phase phase);
     phase.raise_objection(this, "Reseting interface");
     
-    vif.master_cb.awvalid <= 'b0;
-    vif.master_cb.awaddr <= 'b0;
-    vif.master_cb.awprot <= 'b0;
-    vif.master_cb.wvalid <= 'b0;
-    vif.master_cb.wdata <= 'b0;
-    vif.master_cb.wstrb <= 'b0;
-    vif.master_cb.bready <= 'b0;
-    vif.master_cb.arvalid <= 'b0;
-    vif.master_cb.araddr <= 'b0;
-    vif.master_cb.arprot <= 'b0;
-    vif.master_cb.rready <= 'b0;
+    mst_vif.master_cb.awvalid <= 'b0;
+    mst_vif.master_cb.awaddr <= 'b0;
+    mst_vif.master_cb.awprot <= 'b0;
+    mst_vif.master_cb.wvalid <= 'b0;
+    mst_vif.master_cb.wdata <= 'b0;
+    mst_vif.master_cb.wstrb <= 'b0;
+    mst_vif.master_cb.bready <= 'b0;
+    mst_vif.master_cb.arvalid <= 'b0;
+    mst_vif.master_cb.araddr <= 'b0;
+    mst_vif.master_cb.arprot <= 'b0;
+    mst_vif.master_cb.rready <= 'b0;
 
 
     phase.drop_objection(this, "Reseting interface - Done");
@@ -78,14 +78,14 @@ task axi4_lite_master_driver::drive_wr_addr_channel();
     `uvm_info(get_type_name(), $sformatf("Driving WR_ADDR channel: \n%s", req.sprint()), UVM_HIGH)
     
     // This channel cannot wait for the ready to raise the valid
-    vif.master_cb.awvalid <= 1'b1;
-    vif.master_cb.awaddr <= req.addr;
+    mst_vif.master_cb.awvalid <= 1'b1;
+    mst_vif.master_cb.awaddr <= req.addr;
 
     //Unlocks pipeline
     pipeline_lock.put();
 
-    @(posedge vif.clk iff vif.awready === 1'b1);
-    vif.master_cb.awvalid <= 1'b0;
+    @(posedge mst_vif.clk iff mst_vif.awready === 1'b1);
+    mst_vif.master_cb.awvalid <= 1'b0;
 
 endtask : drive_wr_addr_channel
 
@@ -93,15 +93,15 @@ task axi4_lite_master_driver::drive_wr_data_channel();
     `uvm_info(get_type_name(), $sformatf("Driving WR_DATA channel: \n%s", req.sprint()), UVM_HIGH)
 
     // This channel cannot wait for the ready to raise the valid
-    vif.master_cb.wvalid <= 1'b1;
-    vif.master_cb.wdata <= req.data;
-    vif.master_cb.wstrb <= req.wstrb;
+    mst_vif.master_cb.wvalid <= 1'b1;
+    mst_vif.master_cb.wdata <= req.data;
+    mst_vif.master_cb.wstrb <= req.wstrb;
 
     //Unlocks pipeline
     pipeline_lock.put();
 
-    @(posedge vif.clk iff vif.wready === 1'b1);
-    vif.master_cb.wvalid <= 1'b0;
+    @(posedge mst_vif.clk iff mst_vif.wready === 1'b1);
+    mst_vif.master_cb.wvalid <= 1'b0;
 endtask : drive_wr_data_channel
 
 
@@ -110,13 +110,13 @@ task axi4_lite_master_driver::drive_wr_resp_channel();
 
     // This channel can wait for the slave to raise the READY
     if(req.handshake_type == WAIT_TO_SEND) begin
-        @(posedge vif.clk iff vif.bvalid === 1'b1);
+        @(posedge mst_vif.clk iff mst_vif.bvalid === 1'b1);
     end
     
-    vif.master_cb.bready <= 1'b1;
+    mst_vif.master_cb.bready <= 1'b1;
     // Temp. I will create a flag later to randomize the delay to low the ready resp
-    @(posedge vif.clk iff vif.bvalid === 1'b1);
+    @(posedge mst_vif.clk iff mst_vif.bvalid === 1'b1);
     
-    vif.master_cb.bready <= 1'b0;
+    mst_vif.master_cb.bready <= 1'b0;
     pipeline_lock.put();
 endtask : drive_wr_resp_channel

@@ -25,6 +25,7 @@ function void axi4_lite_agent::build_phase(uvm_phase phase);
     else `uvm_fatal(get_type_name(), "Failed to config master or slave agent")
     
     uvm_config_db#(int)::set(this, "drv", "max_clks_to_handshake", agt_cfg.max_clks_to_handshake);
+    uvm_config_db#(bit)::set(this, "drv", "is_master", agt_cfg.is_master);
 
 
     if(!agt_cfg.is_master)

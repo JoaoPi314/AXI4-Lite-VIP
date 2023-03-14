@@ -13,10 +13,12 @@ multichannels in parallel.
 class axi4_lite_base_driver extends uvm_driver#(axi4_lite_packet);
     `uvm_component_utils(axi4_lite_base_driver)
 
-    axi4_lite_mst_vif vif;
+    axi4_lite_mst_vif mst_vif;
+    axi4_lite_slv_vif slv_vif;
 
     semaphore pipeline_lock = new(1);
     int max_clks_to_handshake;
+    bit is_master;
 
     //  Constructor: new
     function new(string name = "axi4_lite_base_driver", uvm_component parent);
@@ -34,7 +36,7 @@ class axi4_lite_base_driver extends uvm_driver#(axi4_lite_packet);
     This task will check the sequence channel and call the
     respective task to drive the data from sequence
     */
-    extern task automatic pipeline_selector();
+    extern task automatic pipeline_selector(int id);
 
 
     /*
@@ -66,29 +68,35 @@ endclass: axi4_lite_base_driver
 
 function void axi4_lite_base_driver::build_phase(uvm_phase phase);
     super.build_phase(phase);
-    assert(uvm_config_db#(bit)::get(this, "", "valid_transfers", valid_transfers))
-        else `uvm_fatal(get_type_name(), "Failed to get agent configuration - valid transfers")
 
     assert(uvm_config_db#(int)::get(this, "", "max_clks_to_handshake", max_clks_to_handshake))
         else `uvm_fatal(get_type_name(), "Failed to get agent configuration - max_clks_to_handshake")
 
-    assert(uvm_config_db#(axi4_lite_mst_vif)::get(this, "", "mst_vif", vif))
-        else `uvm_fatal(get_type_name(), "Failed to get virtual interface")
+    assert(uvm_config_db#(bit)::get(this, "", "is_master", is_master))
+        else `uvm_fatal(get_type_name(), "Failed to get agent configuration - is_master")
+
+
+    assert(uvm_config_db#(axi4_lite_mst_vif)::get(this, "", "mst_vif", mst_vif))
+        else `uvm_fatal(get_type_name(), "Failed to get virtual interface - mst")
+
+    assert(uvm_config_db#(axi4_lite_slv_vif)::get(this, "", "slv_vif", slv_vif))
+        else `uvm_fatal(get_type_name(), "Failed to get virtual interface - slv")
 endfunction: build_phase
 
 
 task axi4_lite_base_driver::main_phase(uvm_phase phase);
-    @(negedge vif.arst_n);
-    @(posedge vif.arst_n);
+    @(negedge mst_vif.arst_n);
+    @(posedge mst_vif.arst_n);
 
     fork
-        pipeline_selector();
-        pipeline_selector();
-        pipeline_selector();
+        pipeline_selector(0);
+        pipeline_selector(1);
+        pipeline_selector(2);
     join
 endtask: main_phase
 
-task axi4_lite_base_driver::pipeline_selector();
+
+task axi4_lite_base_driver::pipeline_selector(int id);
     forever begin
         pipeline_lock.get();
         seq_item_port.get(req);
@@ -100,11 +108,23 @@ task axi4_lite_base_driver::pipeline_selector();
                     WR_RESP: drive_wr_resp_channel();
                 endcase
             end
-
+            
             begin
-                
-                repeat(max_clks_to_handshake) @(posedge vif.clk);
-                `uvm_info(get_name(), $sformatf("I po esperei demais aqui e to baixando. %d", max_clks_to_handshake), UVM_NONE)
+                repeat(max_clks_to_handshake) @(posedge mst_vif.clk);
+                `uvm_info(get_type_name(), $sformatf("Dropping %s channel - No response from Master/Slave...", req.active_channel.name()), UVM_LOW)
+                case(req.active_channel)
+                    WR_ADDR: if (is_master)
+                                mst_vif.master_cb.awvalid <= 1'b0;
+                             else slv_vif.slave_cb.awready <= 1'b0;
+                    WR_DATA: if (is_master)
+                                mst_vif.master_cb.wvalid <= 1'b0;
+                             else slv_vif.slave_cb.wready <= 1'b0;
+                    WR_RESP: if (is_master)
+                                mst_vif.master_cb.bready <= 1'b0;
+                             else slv_vif.slave_cb.bvalid <= 1'b0;
+                endcase
+                #id
+                pipeline_lock.put();
             end
         join_any
         disable fork;

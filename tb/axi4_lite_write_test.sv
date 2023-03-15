@@ -31,6 +31,8 @@ task axi4_lite_write_test::main_phase(uvm_phase phase);
     mst_seq = axi4_lite_wr_master_sequence::type_id::create("mst_seq");
     slv_seq = axi4_lite_wr_slave_sequence::type_id::create("slv_seq");
 
+    mst_seq.num_of_transactions = 100;
+    slv_seq.num_of_transactions = 100;
     fork        
         mst_seq.start(mst_agt.sqr);
         slv_seq.start(slv_agt.sqr);

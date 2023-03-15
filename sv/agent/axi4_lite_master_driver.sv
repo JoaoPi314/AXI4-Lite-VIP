@@ -31,7 +31,7 @@ class axi4_lite_master_driver extends axi4_lite_base_driver;
     This task will be responsible for drive data into the
     write address channel of the AXI4 Lite
     */
-    extern task automatic drive_wr_addr_channel();
+    extern task automatic drive_wr_addr_channel(axi4_lite_packet pkt);
 
 
     /*
@@ -39,14 +39,14 @@ class axi4_lite_master_driver extends axi4_lite_base_driver;
     This task will be responsible for drive data into the
     write dataess channel of the AXI4 Lite
     */
-    extern task automatic drive_wr_data_channel();
+    extern task automatic drive_wr_data_channel(axi4_lite_packet pkt);
 
     /*
     Task: drive_wr_resp_channel
     This task will be responsible for drive the ready into the
     write response channel of the AXI4 Lite
     */
-    extern task automatic drive_wr_resp_channel();
+    extern task automatic drive_wr_resp_channel(axi4_lite_packet pkt);
 
 endclass: axi4_lite_master_driver
 
@@ -74,22 +74,22 @@ task axi4_lite_master_driver::reset_phase(uvm_phase phase);
     phase.drop_objection(this, "Reseting interface - Done");
 endtask : reset_phase
 
-task axi4_lite_master_driver::drive_wr_addr_channel();
+task axi4_lite_master_driver::drive_wr_addr_channel(axi4_lite_packet pkt);
     `uvm_info(get_type_name(), $sformatf("Driving WR_ADDR channel: \n%s", req.sprint()), UVM_HIGH)
     
     // This channel cannot wait for the ready to raise the valid
     mst_vif.master_cb.awvalid <= 1'b1;
     mst_vif.master_cb.awaddr <= req.addr;
 
-    //Unlocks pipeline
+    //Unlocks pipeline    
+    seq_item_port.put_response(pkt);
     pipeline_lock.put();
-
     @(posedge mst_vif.clk iff mst_vif.awready === 1'b1);
     mst_vif.master_cb.awvalid <= 1'b0;
 
 endtask : drive_wr_addr_channel
 
-task axi4_lite_master_driver::drive_wr_data_channel();
+task axi4_lite_master_driver::drive_wr_data_channel(axi4_lite_packet pkt);
     `uvm_info(get_type_name(), $sformatf("Driving WR_DATA channel: \n%s", req.sprint()), UVM_HIGH)
 
     // This channel cannot wait for the ready to raise the valid
@@ -98,6 +98,7 @@ task axi4_lite_master_driver::drive_wr_data_channel();
     mst_vif.master_cb.wstrb <= req.wstrb;
 
     //Unlocks pipeline
+    seq_item_port.put_response(pkt);
     pipeline_lock.put();
 
     @(posedge mst_vif.clk iff mst_vif.wready === 1'b1);
@@ -105,7 +106,7 @@ task axi4_lite_master_driver::drive_wr_data_channel();
 endtask : drive_wr_data_channel
 
 
-task axi4_lite_master_driver::drive_wr_resp_channel();
+task axi4_lite_master_driver::drive_wr_resp_channel(axi4_lite_packet pkt);
     `uvm_info(get_type_name(), $sformatf("Driving WR_RESP: \n%s", req.sprint()), UVM_HIGH)
 
     // This channel can wait for the slave to raise the READY
@@ -114,9 +115,10 @@ task axi4_lite_master_driver::drive_wr_resp_channel();
     end
     
     mst_vif.master_cb.bready <= 1'b1;
+    pipeline_lock.put();
     // Temp. I will create a flag later to randomize the delay to low the ready resp
     @(posedge mst_vif.clk iff mst_vif.bvalid === 1'b1);
     
     mst_vif.master_cb.bready <= 1'b0;
-    pipeline_lock.put();
+    seq_item_port.put_response(pkt);
 endtask : drive_wr_resp_channel

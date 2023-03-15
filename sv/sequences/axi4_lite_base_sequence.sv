@@ -42,6 +42,7 @@ task axi4_lite_base_sequence::pre_body();
         phase = starting_phase;
     `endif
     
+
     if(phase != null) begin
         phase.raise_objection(this, get_type_name());
         `uvm_info(get_type_name(), "Raised objection...", UVM_MEDIUM)        

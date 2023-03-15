@@ -44,7 +44,7 @@ class axi4_lite_base_driver extends uvm_driver#(axi4_lite_packet);
     This task will be responsible for drive data into the
     write address channel of the AXI4 Lite
     */
-    virtual task automatic drive_wr_addr_channel();
+    virtual task automatic drive_wr_addr_channel(axi4_lite_packet pkt);
     endtask
 
 
@@ -53,7 +53,7 @@ class axi4_lite_base_driver extends uvm_driver#(axi4_lite_packet);
     This task will be responsible for drive data into the
     write dataess channel of the AXI4 Lite
     */
-    virtual task automatic drive_wr_data_channel();
+    virtual task automatic drive_wr_data_channel(axi4_lite_packet pkt);
     endtask
 
     /*
@@ -61,7 +61,7 @@ class axi4_lite_base_driver extends uvm_driver#(axi4_lite_packet);
     This task will be responsible for drive the ready into the
     write response channel of the AXI4 Lite
     */
-    virtual task automatic drive_wr_resp_channel();
+    virtual task automatic drive_wr_resp_channel(axi4_lite_packet pkt);
     endtask
 
 endclass: axi4_lite_base_driver
@@ -103,9 +103,9 @@ task axi4_lite_base_driver::pipeline_selector(int id);
         fork
             begin
                 case(req.active_channel)
-                    WR_ADDR: drive_wr_addr_channel();
-                    WR_DATA: drive_wr_data_channel();
-                    WR_RESP: drive_wr_resp_channel();
+                    WR_ADDR: drive_wr_addr_channel(req);
+                    WR_DATA: drive_wr_data_channel(req);
+                    WR_RESP: drive_wr_resp_channel(req);
                 endcase
             end
             

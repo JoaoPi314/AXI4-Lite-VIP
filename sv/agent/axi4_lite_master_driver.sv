@@ -64,7 +64,7 @@ task axi4_lite_master_driver::reset_phase(uvm_phase phase);
     mst_vif.master_cb.wvalid <= 'b0;
     mst_vif.master_cb.wdata <= 'b0;
     mst_vif.master_cb.wstrb <= 'b0;
-    mst_vif.master_cb.bready <= 'b0;
+    mst_vif.master_cb.bready <= wr_resp_always_ready;
     mst_vif.master_cb.arvalid <= 'b0;
     mst_vif.master_cb.araddr <= 'b0;
     mst_vif.master_cb.arprot <= 'b0;
@@ -109,16 +109,23 @@ endtask : drive_wr_data_channel
 task axi4_lite_master_driver::drive_wr_resp_channel(axi4_lite_packet pkt);
     `uvm_info(get_type_name(), $sformatf("Driving WR_RESP: \n%s", req.sprint()), UVM_HIGH)
 
+
     // This channel can wait for the slave to raise the READY
-    if(req.handshake_type == WAIT_TO_SEND) begin
+    if(wr_resp_always_ready) begin
+        pipeline_lock.put();
+
         @(posedge mst_vif.clk iff mst_vif.bvalid === 1'b1);
+    end else begin
+        if(req.handshake_type == WAIT_TO_SEND) begin
+            @(posedge mst_vif.clk iff mst_vif.bvalid === 1'b1);
+        end
+        
+        mst_vif.master_cb.bready <= 1'b1;
+
+        pipeline_lock.put();
+
+        @(posedge mst_vif.clk iff mst_vif.bvalid === 1'b1);        
+        mst_vif.master_cb.bready <= 1'b0;
     end
-    
-    mst_vif.master_cb.bready <= 1'b1;
-    pipeline_lock.put();
-    // Temp. I will create a flag later to randomize the delay to low the ready resp
-    @(posedge mst_vif.clk iff mst_vif.bvalid === 1'b1);
-    
-    mst_vif.master_cb.bready <= 1'b0;
     seq_item_port.put_response(pkt);
 endtask : drive_wr_resp_channel

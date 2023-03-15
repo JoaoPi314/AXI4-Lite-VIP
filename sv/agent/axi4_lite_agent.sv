@@ -26,6 +26,12 @@ function void axi4_lite_agent::build_phase(uvm_phase phase);
     
     uvm_config_db#(int)::set(this, "drv", "max_clks_to_handshake", agt_cfg.max_clks_to_handshake);
     uvm_config_db#(bit)::set(this, "drv", "is_master", agt_cfg.is_master);
+    uvm_config_db#(bit)::set(this, "drv", "wr_addr_always_ready", agt_cfg.wr_addr_always_ready);
+    uvm_config_db#(bit)::set(this, "drv", "wr_data_always_ready", agt_cfg.wr_data_always_ready);
+    uvm_config_db#(bit)::set(this, "drv", "wr_resp_always_ready", agt_cfg.wr_resp_always_ready);
+
+
+
 
 
     if(!agt_cfg.is_master)

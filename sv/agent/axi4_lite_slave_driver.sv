@@ -1,11 +1,6 @@
 class axi4_lite_slave_driver extends axi4_lite_base_driver;
     `uvm_component_utils(axi4_lite_slave_driver)
 
-
-    bit wr_addr_finish = 1'b0;
-    bit wr_data_finish = 1'b0;
-
-
     function new(string name="axi4_lite_slave_driver", uvm_component parent);
         super.new(name, parent);
     endfunction : new
@@ -20,7 +15,7 @@ class axi4_lite_slave_driver extends axi4_lite_base_driver;
     This task will be responsible for drive data into the
     write address channel of the AXI4 Lite
     */
-    extern task automatic drive_wr_addr_channel();
+    extern task automatic drive_wr_addr_channel(axi4_lite_packet pkt);
 
 
     /*
@@ -28,14 +23,14 @@ class axi4_lite_slave_driver extends axi4_lite_base_driver;
     This task will be responsible for drive data into the
     write dataess channel of the AXI4 Lite
     */
-    extern task automatic drive_wr_data_channel();
+    extern task automatic drive_wr_data_channel(axi4_lite_packet pkt);
     
     /*
     Task: drive_wr_resp_channel
     This task will be responsible for drive the ready into the
     write response channel of the AXI4 Lite
     */
-    extern task automatic drive_wr_resp_channel();
+    extern task automatic drive_wr_resp_channel(axi4_lite_packet pkt);
 
 
 endclass : axi4_lite_slave_driver
@@ -61,7 +56,7 @@ task axi4_lite_slave_driver::reset_phase(uvm_phase phase);
     phase.drop_objection(this, "Reseting interface - Done");
 endtask : reset_phase
 
-task axi4_lite_slave_driver::drive_wr_addr_channel();
+task axi4_lite_slave_driver::drive_wr_addr_channel(axi4_lite_packet pkt);
     `uvm_info(get_type_name(), $sformatf("Driving WR_ADDR channel: \n%s", req.sprint()), UVM_HIGH)
 
 
@@ -73,15 +68,15 @@ task axi4_lite_slave_driver::drive_wr_addr_channel();
 
     //Unlocks pipeline
     pipeline_lock.put();
-
+    
     @(posedge slv_vif.clk iff slv_vif.awvalid === 1'b1);
     slv_vif.slave_cb.awready <= 1'b0;
-
-    wr_addr_finish = 1'b1;
+    
+    seq_item_port.put_response(pkt);
 
 endtask : drive_wr_addr_channel
 
-task axi4_lite_slave_driver::drive_wr_data_channel();
+task axi4_lite_slave_driver::drive_wr_data_channel(axi4_lite_packet pkt);
     `uvm_info(get_type_name(), $sformatf("Driving WR_DATA channel: \n%s", req.sprint()), UVM_HIGH)
     
     if(req.handshake_type == WAIT_TO_SEND) begin
@@ -92,20 +87,17 @@ task axi4_lite_slave_driver::drive_wr_data_channel();
 
     //Unlocks pipeline
     pipeline_lock.put();
-
+    
     @(posedge slv_vif.clk iff slv_vif.wvalid === 1'b1);
     slv_vif.slave_cb.wready <= 1'b0;
-
-    wr_data_finish = 1'b1;
+    
+    seq_item_port.put_response(pkt);
 
 endtask : drive_wr_data_channel
 
 
-task axi4_lite_slave_driver::drive_wr_resp_channel();
+task axi4_lite_slave_driver::drive_wr_resp_channel(axi4_lite_packet pkt);
     `uvm_info(get_type_name(), $sformatf("Driving WR_RESP: \n%s", req.sprint()), UVM_HIGH)
-
-    
-    @(posedge slv_vif.clk iff (wr_data_finish & wr_addr_finish));
     
     slv_vif.slave_cb.bvalid <= 1'b1;
     slv_vif.slave_cb.bresp <= req.resp;
@@ -115,7 +107,6 @@ task axi4_lite_slave_driver::drive_wr_resp_channel();
 
     slv_vif.slave_cb.bvalid<= 1'b0;
 
-    wr_addr_finish = 1'b0;
-    wr_data_finish = 1'b0;
+    seq_item_port.put_response(pkt);
 
 endtask : drive_wr_resp_channel

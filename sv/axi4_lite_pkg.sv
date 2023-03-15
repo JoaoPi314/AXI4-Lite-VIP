@@ -24,12 +24,6 @@ package axi4_lite_pkg;
 
     `include "../sv/axi4_lite_sequencer.sv"
   	`include "../sv/sequences/axi4_lite_base_sequence.sv"
-  	`include "../sv/sequences/axi4_lite_wr_addr_master_sequence.sv"
-  	`include "../sv/sequences/axi4_lite_wr_addr_slave_sequence.sv"
-  	`include "../sv/sequences/axi4_lite_wr_data_master_sequence.sv"
-  	`include "../sv/sequences/axi4_lite_wr_data_slave_sequence.sv"
-    `include "../sv/sequences/axi4_lite_wr_resp_master_sequence.sv"
-    `include "../sv/sequences/axi4_lite_wr_resp_slave_sequence.sv"
   	`include "../sv/sequences/axi4_lite_wr_master_sequence.sv"
   	`include "../sv/sequences/axi4_lite_wr_slave_sequence.sv"
 

@@ -6,16 +6,19 @@ author: João Pedro Melquiades Gomes
 mail: jmelquiadesgomes@gmail.com
 
 Description: The driver is capable of drive to master and
-slave AXI4 Lite interfaces. It will be pipelined to drive
-multichannels in parallel.
+slave AXI4 Lite interfaces. This is done by overriding
+the base driver into one of its childs. Each channel of
+AXI4 Lite is independent and can be driven together
 ************************************************/
 
 class axi4_lite_base_driver extends uvm_driver#(axi4_lite_packet);
     `uvm_component_utils(axi4_lite_base_driver)
 
+    // Interfaces (See typedef in pkg)
     axi4_lite_mst_vif mst_vif;
     axi4_lite_slv_vif slv_vif;
 
+    // Control variables
     semaphore pipeline_lock = new(1);
     int max_clks_to_handshake;
     bit is_master;
@@ -23,48 +26,45 @@ class axi4_lite_base_driver extends uvm_driver#(axi4_lite_packet);
     bit wr_data_always_ready;
     bit wr_resp_always_ready;
 
-
-    //  Constructor: new
     function new(string name = "axi4_lite_base_driver", uvm_component parent);
         super.new(name, parent);
     endfunction: new
 
-    //  Function: build_phase
+    // Function: build_phase
     extern function void build_phase(uvm_phase phase);
 
-    //  Task: main_phase
+    // Task: main_phase
     extern task main_phase(uvm_phase phase);
 
     /*
-    Task: pipeline_selector()
-    This task will check the sequence channel and call the
-    respective task to drive the data from sequence
-    */
+     * Task: pipeline_selector()
+     * This task will check the sequence channel and call the
+     * respective task to drive the data from sequence.
+     */
     extern task automatic pipeline_selector(int id);
 
-
     /*
-    Task: drive_wr_addr_channel
-    This task will be responsible for drive data into the
-    write address channel of the AXI4 Lite
-    */
+     * Task: drive_wr_addr_channel
+     * This task will be responsible for drive data into the
+     * write address channel of the AXI4 Lite
+     */
     virtual task automatic drive_wr_addr_channel(axi4_lite_packet pkt);
     endtask
 
 
     /*
-    Task: drive_wr_data_channel
-    This task will be responsible for drive data into the
-    write dataess channel of the AXI4 Lite
-    */
+     * Task: drive_wr_data_channel
+     * This task will be responsible for drive data into the
+     * write data channel of the AXI4 Lite
+     */
     virtual task automatic drive_wr_data_channel(axi4_lite_packet pkt);
     endtask
 
     /*
-    Task: drive_wr_resp_channel
-    This task will be responsible for drive the ready into the
-    write response channel of the AXI4 Lite
-    */
+     * Task: drive_wr_resp_channel
+     * This task will be responsible for drive the ready into the
+     * write response channel of the AXI4 Lite
+     */
     virtual task automatic drive_wr_resp_channel(axi4_lite_packet pkt);
     endtask
 
@@ -73,6 +73,7 @@ endclass: axi4_lite_base_driver
 function void axi4_lite_base_driver::build_phase(uvm_phase phase);
     super.build_phase(phase);
 
+    // Get configurations from agent 
     assert(uvm_config_db#(int)::get(this, "", "max_clks_to_handshake", max_clks_to_handshake))
         else `uvm_fatal(get_type_name(), "Failed to get agent configuration - max_clks_to_handshake")
 
@@ -100,6 +101,7 @@ task axi4_lite_base_driver::main_phase(uvm_phase phase);
     @(negedge mst_vif.arst_n);
     @(posedge mst_vif.arst_n);    
 
+    // The IDs are to avoid concurrent get_next_item()
     fork
         pipeline_selector(0);
         pipeline_selector(1);
@@ -113,6 +115,7 @@ task axi4_lite_base_driver::pipeline_selector(int id);
         #id pipeline_lock.get();
         seq_item_port.get(req);
         fork
+            // Tries to make handshake with master/slave
             begin
                 case(req.active_channel)
                     WR_ADDR: drive_wr_addr_channel(req);
@@ -120,7 +123,7 @@ task axi4_lite_base_driver::pipeline_selector(int id);
                     WR_RESP: drive_wr_resp_channel(req);
                 endcase
             end
-            
+            // Waits to drop the channel if no response is received
             begin
                 repeat(max_clks_to_handshake) @(posedge mst_vif.clk);
                 `uvm_info(get_type_name(), $sformatf("Dropping %s channel - No response from Master/Slave...", req.active_channel.name()), UVM_LOW)
@@ -139,6 +142,7 @@ task axi4_lite_base_driver::pipeline_selector(int id);
                 pipeline_lock.put();
             end
         join_any
+        // It's necessary to kill the non-finished process after one is finished
         disable fork;
     end 
 endtask : pipeline_selector

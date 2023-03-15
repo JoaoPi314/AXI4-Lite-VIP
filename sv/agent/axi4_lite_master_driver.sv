@@ -5,47 +5,31 @@ file: axi4_lite_master_driver.sv
 author: João Pedro Melquiades Gomes
 mail: jmelquiadesgomes@gmail.com
 
-Description: The driver is capable of drive to master and
-slave AXI4 Lite interfaces. It will be pipelined to drive
-multichannels in parallel.
+Description: The master driver extends the base
+driver and it's intended to drive into Slave AXI 4
+Lite designs
 ************************************************/
 
 class axi4_lite_master_driver extends axi4_lite_base_driver;
     `uvm_component_utils(axi4_lite_master_driver)
 
-    //  Constructor: new
     function new(string name = "axi4_lite_master_driver", uvm_component parent);
         super.new(name, parent);
     endfunction: new
 
-    //  Function: build_phase
+    // Function: build_phase
     extern function void build_phase(uvm_phase phase);
 
-
-    //Task: reset_phase
-
+    // Task: reset_phase (Compatibility with phase-jump)
     extern virtual task reset_phase(uvm_phase phase);
 
-    /*
-    Task: drive_wr_addr_channel
-    This task will be responsible for drive data into the
-    write address channel of the AXI4 Lite
-    */
+    // Task: drive_wr_addr_channel
     extern task automatic drive_wr_addr_channel(axi4_lite_packet pkt);
 
-
-    /*
-    Task: drive_wr_data_channel
-    This task will be responsible for drive data into the
-    write dataess channel of the AXI4 Lite
-    */
+    // Task: drive_wr_data_channel
     extern task automatic drive_wr_data_channel(axi4_lite_packet pkt);
 
-    /*
-    Task: drive_wr_resp_channel
-    This task will be responsible for drive the ready into the
-    write response channel of the AXI4 Lite
-    */
+    // Task: drive_wr_resp_channel
     extern task automatic drive_wr_resp_channel(axi4_lite_packet pkt);
 
 endclass: axi4_lite_master_driver
@@ -70,7 +54,6 @@ task axi4_lite_master_driver::reset_phase(uvm_phase phase);
     mst_vif.master_cb.arprot <= 'b0;
     mst_vif.master_cb.rready <= 'b0;
 
-
     phase.drop_objection(this, "Reseting interface - Done");
 endtask : reset_phase
 
@@ -81,12 +64,12 @@ task axi4_lite_master_driver::drive_wr_addr_channel(axi4_lite_packet pkt);
     mst_vif.master_cb.awvalid <= 1'b1;
     mst_vif.master_cb.awaddr <= req.addr;
 
-    //Unlocks pipeline    
+    // Sends a response back to the sequence and unlocks the pipeline
     seq_item_port.put_response(pkt);
     pipeline_lock.put();
+
     @(posedge mst_vif.clk iff mst_vif.awready === 1'b1);
     mst_vif.master_cb.awvalid <= 1'b0;
-
 endtask : drive_wr_addr_channel
 
 task axi4_lite_master_driver::drive_wr_data_channel(axi4_lite_packet pkt);
@@ -97,7 +80,7 @@ task axi4_lite_master_driver::drive_wr_data_channel(axi4_lite_packet pkt);
     mst_vif.master_cb.wdata <= req.data;
     mst_vif.master_cb.wstrb <= req.wstrb;
 
-    //Unlocks pipeline
+    // Sends a response back to the sequence and unlocks the pipeline
     seq_item_port.put_response(pkt);
     pipeline_lock.put();
 
@@ -109,23 +92,23 @@ endtask : drive_wr_data_channel
 task axi4_lite_master_driver::drive_wr_resp_channel(axi4_lite_packet pkt);
     `uvm_info(get_type_name(), $sformatf("Driving WR_RESP: \n%s", req.sprint()), UVM_HIGH)
 
-
-    // This channel can wait for the slave to raise the READY
+    // This channel can wait for the slave to raise the ready
     if(wr_resp_always_ready) begin
+        // Unlocks the pipeline
         pipeline_lock.put();
-
         @(posedge mst_vif.clk iff mst_vif.bvalid === 1'b1);
     end else begin
         if(req.handshake_type == WAIT_TO_SEND) begin
             @(posedge mst_vif.clk iff mst_vif.bvalid === 1'b1);
         end
-        
+
         mst_vif.master_cb.bready <= 1'b1;
-
+        
         pipeline_lock.put();
-
+        
         @(posedge mst_vif.clk iff mst_vif.bvalid === 1'b1);        
         mst_vif.master_cb.bready <= 1'b0;
     end
+    // Sends a response back to the sequence
     seq_item_port.put_response(pkt);
 endtask : drive_wr_resp_channel

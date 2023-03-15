@@ -9,7 +9,6 @@ Description: VIP package
 ************************************************/
 
 package axi4_lite_pkg;
-
     `include "uvm_macros.svh"
     import uvm_pkg::*;
 
@@ -35,6 +34,4 @@ package axi4_lite_pkg;
 
 	  `include "./axi4_lite_base_test.sv" 
 	  `include "./axi4_lite_write_test.sv" 
-
-
 endpackage : axi4_lite_pkg

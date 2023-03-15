@@ -11,21 +11,24 @@ via AXI4 Lite
 class axi4_lite_wr_slave_sequence extends axi4_lite_base_sequence;
     `uvm_object_utils(axi4_lite_wr_slave_sequence)
 
+    // Control variables
     int unlock_resp_channel_count = 0;
     int num_of_transactions = 100;
 
-    //  Constructor: new
     function new(string name = "axi4_lite_wr_slave_sequence");
         super.new(name);
     endfunction: new
 
+    /*
+     * Function: response_handler
+     * Description: When using use_response_handler(1), this function will 
+     * be called every time the driver sends a response back to the sequence.
+     * Here, it is used to keep the sequences sending packets in order to per-
+     * form valid write operations.
+     */
     extern virtual function void response_handler(uvm_sequence_item response);
 
-    /*
-    Task: body
-    Description: This task will randomize the req transaction with
-    the slave set to WR_data
-    */
+    // Task: body
     extern task body();
 
 endclass: axi4_lite_wr_slave_sequence

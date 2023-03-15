@@ -13,8 +13,9 @@ module top;
   initial begin
       clk = 1;
       arst_n = 1;
-      #17ns arst_n = 0;
       @(posedge clk);
+      arst_n = 0;
+      repeat(5) @(posedge clk);
       arst_n = 1;
   end
       

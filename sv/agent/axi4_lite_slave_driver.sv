@@ -43,8 +43,8 @@ endfunction: build_phase
 task axi4_lite_slave_driver::reset_phase(uvm_phase phase);
     phase.raise_objection(this, "Reseting interface");
     
-    slv_vif.slave_cb.awready <= 'b0;
-    slv_vif.slave_cb.wready <= 'b0;
+    slv_vif.slave_cb.awready <= wr_addr_always_ready;
+    slv_vif.slave_cb.wready <= wr_data_always_ready;
     slv_vif.slave_cb.bvalid <= 'b0;
     slv_vif.slave_cb.bresp <= 'b0;
     slv_vif.slave_cb.arready <= 'b0;
@@ -60,17 +60,25 @@ task axi4_lite_slave_driver::drive_wr_addr_channel(axi4_lite_packet pkt);
     `uvm_info(get_type_name(), $sformatf("Driving WR_ADDR channel: \n%s", req.sprint()), UVM_HIGH)
 
 
-    if(req.handshake_type == WAIT_TO_SEND) begin
-        @(posedge slv_vif.clk iff (slv_vif.awvalid === 1'b1));
-    end
+    if(wr_addr_always_ready) begin
+        //Unlocks pipeline
+        pipeline_lock.put();
 
-    slv_vif.slave_cb.awready <= 1'b1;
-
-    //Unlocks pipeline
-    pipeline_lock.put();
+        @(posedge slv_vif.clk iff slv_vif.awvalid === 1'b1);
+    end else begin
+        if(req.handshake_type == WAIT_TO_SEND) begin
+            @(posedge slv_vif.clk iff (slv_vif.awvalid === 1'b1));
+        end
     
-    @(posedge slv_vif.clk iff slv_vif.awvalid === 1'b1);
-    slv_vif.slave_cb.awready <= 1'b0;
+        slv_vif.slave_cb.awready <= 1'b1;
+    
+        //Unlocks pipeline
+        pipeline_lock.put();
+        
+        @(posedge slv_vif.clk iff slv_vif.awvalid === 1'b1);
+        slv_vif.slave_cb.awready <= 1'b0;
+
+    end
     
     seq_item_port.put_response(pkt);
 
@@ -79,18 +87,24 @@ endtask : drive_wr_addr_channel
 task axi4_lite_slave_driver::drive_wr_data_channel(axi4_lite_packet pkt);
     `uvm_info(get_type_name(), $sformatf("Driving WR_DATA channel: \n%s", req.sprint()), UVM_HIGH)
     
-    if(req.handshake_type == WAIT_TO_SEND) begin
-        @(posedge slv_vif.clk iff (slv_vif.wvalid === 1'b1));
+    if(wr_data_always_ready) begin
+        //Unlocks pipeline
+        pipeline_lock.put();
+        
+        @(posedge slv_vif.clk iff slv_vif.wvalid === 1'b1);
+    end else begin 
+        if(req.handshake_type == WAIT_TO_SEND) begin
+            @(posedge slv_vif.clk iff (slv_vif.wvalid === 1'b1));
+        end
+
+        slv_vif.slave_cb.wready <= 1'b1;
+
+        //Unlocks pipeline
+        pipeline_lock.put();
+        
+        @(posedge slv_vif.clk iff slv_vif.wvalid === 1'b1);
+        slv_vif.slave_cb.wready <= 1'b0;
     end
-
-    slv_vif.slave_cb.wready <= 1'b1;
-
-    //Unlocks pipeline
-    pipeline_lock.put();
-    
-    @(posedge slv_vif.clk iff slv_vif.wvalid === 1'b1);
-    slv_vif.slave_cb.wready <= 1'b0;
-    
     seq_item_port.put_response(pkt);
 
 endtask : drive_wr_data_channel

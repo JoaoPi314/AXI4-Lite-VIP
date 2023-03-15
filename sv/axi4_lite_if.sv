@@ -57,6 +57,7 @@ interface axi4_lite_if #(
         output araddr;
         output arprot;
         output rready;
+        input bvalid;
     endclocking : master_cb
 
     clocking slave_cb @ (posedge clk);
@@ -70,6 +71,8 @@ interface axi4_lite_if #(
         output rdata;
         output rresp;
         output araddr;
+        input awvalid;
+        input wvalid;
     endclocking : slave_cb
 
     // Modports

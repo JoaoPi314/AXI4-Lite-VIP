@@ -19,6 +19,10 @@ class axi4_lite_base_driver extends uvm_driver#(axi4_lite_packet);
     semaphore pipeline_lock = new(1);
     int max_clks_to_handshake;
     bit is_master;
+    bit wr_addr_always_ready;
+    bit wr_data_always_ready;
+    bit wr_resp_always_ready;
+
 
     //  Constructor: new
     function new(string name = "axi4_lite_base_driver", uvm_component parent);
@@ -75,6 +79,14 @@ function void axi4_lite_base_driver::build_phase(uvm_phase phase);
     assert(uvm_config_db#(bit)::get(this, "", "is_master", is_master))
         else `uvm_fatal(get_type_name(), "Failed to get agent configuration - is_master")
 
+    assert(uvm_config_db#(bit)::get(this, "", "wr_addr_always_ready", wr_addr_always_ready))
+        else `uvm_fatal(get_type_name(), "Failed to get agent configuration - wr_addr_always_ready")
+
+    assert(uvm_config_db#(bit)::get(this, "", "wr_data_always_ready", wr_data_always_ready))
+        else `uvm_fatal(get_type_name(), "Failed to get agent configuration - wr_data_always_ready")
+
+    assert(uvm_config_db#(bit)::get(this, "", "wr_resp_always_ready", wr_resp_always_ready))
+        else `uvm_fatal(get_type_name(), "Failed to get agent configuration - wr_resp_always_ready")
 
     assert(uvm_config_db#(axi4_lite_mst_vif)::get(this, "", "mst_vif", mst_vif))
         else `uvm_fatal(get_type_name(), "Failed to get virtual interface - mst")
@@ -86,7 +98,7 @@ endfunction: build_phase
 
 task axi4_lite_base_driver::main_phase(uvm_phase phase);
     @(negedge mst_vif.arst_n);
-    @(posedge mst_vif.arst_n);
+    @(posedge mst_vif.arst_n);    
 
     fork
         pipeline_selector(0);
@@ -98,7 +110,7 @@ endtask: main_phase
 
 task axi4_lite_base_driver::pipeline_selector(int id);
     forever begin
-        pipeline_lock.get();
+        #id pipeline_lock.get();
         seq_item_port.get(req);
         fork
             begin

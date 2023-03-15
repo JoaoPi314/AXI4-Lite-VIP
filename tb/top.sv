@@ -1,3 +1,13 @@
+/********************************************** /
+AXI4-Lite VIP
+
+file: top.tb
+author: João Pedro Melquiades Gomes
+mail: jmelquiadesgomes@gmail.com
+
+Description: A simple testbench to check the VIP
+functionality
+************************************************/
 
 module top;
 

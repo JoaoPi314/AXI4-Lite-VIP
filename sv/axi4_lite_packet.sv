@@ -47,16 +47,13 @@ class axi4_lite_packet#(
         super.new(.name(name));
     endfunction : new
 
-
     // Base constraints
     constraint full_strb_c {
         strb_types == FULL;
     }
-
     constraint no_privilege_secure_data_access {
         prot == 3'b010;
     }
-
     constraint default_resp{
         resp == 'b0;
     }
@@ -72,8 +69,6 @@ class axi4_lite_packet#(
     function void post_randomize();
         update_wstrb();
     endfunction : post_randomize
-
-
 endclass : axi4_lite_packet
 
 

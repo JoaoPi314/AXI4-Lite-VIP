@@ -111,9 +111,13 @@ endtask: main_phase
 
 
 task axi4_lite_base_driver::pipeline_selector(int id);
+
+    axi4_lite_packet pkt = axi4_lite_packet::type_id::create("pkt");
+
     forever begin
         #id pipeline_lock.get();
         seq_item_port.get(req);
+        pkt.copy(req);
         fork
             // Tries to make handshake with master/slave
             begin
@@ -126,8 +130,8 @@ task axi4_lite_base_driver::pipeline_selector(int id);
             // Waits to drop the channel if no response is received
             begin
                 repeat(max_clks_to_handshake) @(posedge mst_vif.clk);
-                `uvm_info(get_type_name(), $sformatf("Dropping %s channel - No response from Master/Slave...", req.active_channel.name()), UVM_LOW)
-                case(req.active_channel)
+                `uvm_info(get_type_name(), $sformatf("Dropping %s channel - No response from Master/Slave...", pkt.active_channel.name()), UVM_LOW)
+                case(pkt.active_channel)
                     WR_ADDR: if (is_master)
                                 mst_vif.master_cb.awvalid <= 1'b0;
                              else slv_vif.slave_cb.awready <= 1'b0;

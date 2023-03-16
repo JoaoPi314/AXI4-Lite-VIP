@@ -63,13 +63,13 @@ task axi4_lite_master_driver::drive_wr_addr_channel(axi4_lite_packet pkt);
     // This channel cannot wait for the ready to raise the valid
     mst_vif.master_cb.awvalid <= 1'b1;
     mst_vif.master_cb.awaddr <= req.addr;
+    pipeline_lock.put();
+    
+    @(posedge mst_vif.clk iff mst_vif.awready === 1'b1);
+    mst_vif.master_cb.awvalid <= 1'b0;
 
     // Sends a response back to the sequence and unlocks the pipeline
     seq_item_port.put_response(pkt);
-    pipeline_lock.put();
-
-    @(posedge mst_vif.clk iff mst_vif.awready === 1'b1);
-    mst_vif.master_cb.awvalid <= 1'b0;
 endtask : drive_wr_addr_channel
 
 task axi4_lite_master_driver::drive_wr_data_channel(axi4_lite_packet pkt);
@@ -80,12 +80,13 @@ task axi4_lite_master_driver::drive_wr_data_channel(axi4_lite_packet pkt);
     mst_vif.master_cb.wdata <= req.data;
     mst_vif.master_cb.wstrb <= req.wstrb;
 
-    // Sends a response back to the sequence and unlocks the pipeline
-    seq_item_port.put_response(pkt);
     pipeline_lock.put();
-
+    
     @(posedge mst_vif.clk iff mst_vif.wready === 1'b1);
     mst_vif.master_cb.wvalid <= 1'b0;
+
+    // Sends a response back to the sequence and unlocks the pipeline
+    seq_item_port.put_response(pkt);
 endtask : drive_wr_data_channel
 
 
@@ -103,12 +104,11 @@ task axi4_lite_master_driver::drive_wr_resp_channel(axi4_lite_packet pkt);
         end
 
         mst_vif.master_cb.bready <= 1'b1;
-        
-        pipeline_lock.put();
-        
+    
         @(posedge mst_vif.clk iff mst_vif.bvalid === 1'b1);        
         mst_vif.master_cb.bready <= 1'b0;
     end
     // Sends a response back to the sequence
     seq_item_port.put_response(pkt);
+    pipeline_lock.put();
 endtask : drive_wr_resp_channel

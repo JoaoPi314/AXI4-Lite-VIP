@@ -11,10 +11,10 @@ Obs: For now, only the Write channels were implemented. I will update the code a
 
 In the Agent Config file there is some possible configurations that can be changed in order to use the VIP in different ways:
 
-* `is\_master`: Configures the agent to be a Master or a Slave AXI4 Lite Agent;
-* `has\_monitor`: Configures a monitor if the user wants to send the AXI4 Lite transactions to a scoreboard or a coverage component;
-* `max\_clks\_to_handshake`: Configures a maximum number of clock periods that one channel can wait before cancelling the operation;
-* `\*\_always\_ready`: Configures if the receiver of that channel will be always ready to receive data or not.
+* `is_master`: Configures the agent to be a Master or a Slave AXI4 Lite Agent;
+* `has_monitor`: Configures a monitor if the user wants to send the AXI4 Lite transactions to a scoreboard or a coverage component;
+* `max_clks_to_handshake`: Configures a maximum number of clock periods that one channel can wait before cancelling the operation;
+* `*_always_ready`: Configures if the receiver of that channel will be always ready to receive data or not.
 
 ## Using the VIP
 

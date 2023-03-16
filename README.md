@@ -30,6 +30,8 @@ According with the protocol, the handshake can occurs with VALID being sent befo
 
 These waveforms are the result of the `axi4_lite_write_test`. The waveforms were generated with Simvision.
 
+![Waveforms](/waveform.png)
+
 ## Future updates
 
 This is the first version of the VIP, and it has only the Write channels implemented. The next steps are:

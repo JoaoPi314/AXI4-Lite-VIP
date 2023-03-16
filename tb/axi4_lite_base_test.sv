@@ -43,9 +43,9 @@ function void axi4_lite_base_test::build_phase(uvm_phase phase);
     // Configures the agents
     mst_agt_cfg.is_master = 1'b1;
     slv_agt_cfg.is_master = 1'b0;
-    slv_agt_cfg.wr_addr_always_ready = 1'b1;
-    slv_agt_cfg.wr_data_always_ready = 1'b1;
-    mst_agt_cfg.wr_resp_always_ready = 1'b1;
+    slv_agt_cfg.wr_addr_always_ready = 1'b0;
+    slv_agt_cfg.wr_data_always_ready = 1'b0;
+    mst_agt_cfg.wr_resp_always_ready = 1'b0;
 
     // Creates the agents
     mst_agt = axi4_lite_agent::type_id::create("mst_agt", this);

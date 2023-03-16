@@ -39,5 +39,5 @@ This is the first version of the VIP, and it has only the Write channels impleme
 
 ## References
 
-* ![Documentation – arm developer](https://developer.arm.com/documentation/ihi0022/e/AMBA-AXI4-Lite-Interface-Specification)
-* ![UVM Driver Use Models – Part 2](https://learnuvmverification.com/index.php/2015/10/28/uvm-driver-use-models-part-2/)
+* [Documentation – arm developer](https://developer.arm.com/documentation/ihi0022/e/AMBA-AXI4-Lite-Interface-Specification)
+* [UVM Driver Use Models – Part 2](https://learnuvmverification.com/index.php/2015/10/28/uvm-driver-use-models-part-2/)

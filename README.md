@@ -10,11 +10,11 @@ Obs: For now, only the Write channels were implemented. I will update the code a
 ## Possible configurations
 
 In the Agent Config file there is some possible configurations that can be changed in order to use the VIP in different ways:
+* `is_master`: Configures the agent to be a Master or a Slave AXI4 Lite Agent;
+* `has_monitor`: Configures a monitor if the user wants to send the AXI4 Lite transactions to a scoreboard or a coverage component;
+* `max_clks_to_handshake`: Configures a maximum number of clock periods that one channel can wait before cancelling the operation;
+* `*_always_ready`: Configures if the receiver of that channel will be always ready to receive data or not.
 
-* `is\_master`: Configures the agent to be a Master or a Slave AXI4 Lite Agent;
-* `has\_monitor`: Configures a monitor if the user wants to send the AXI4 Lite transactions to a scoreboard or a coverage component;
-* `max\_clks\_to_handshake`: Configures a maximum number of clock periods that one channel can wait before cancelling the operation;
-* `\*\_always\_ready`: Configures if the receiver of that channel will be always ready to receive data or not.
 
 ## Using the VIP
 
@@ -39,5 +39,6 @@ This is the first version of the VIP, and it has only the Write channels impleme
 
 ## References
 
-* !(Documentation – arm developer)[https://developer.arm.com/documentation/ihi0022/e/AMBA-AXI4-Lite-Interface-Specification]
-* !(UVM Driver Use Models – Part 2)[https://learnuvmverification.com/index.php/2015/10/28/uvm-driver-use-models-part-2/]
+* [Documentation – arm developer](https://developer.arm.com/documentation/ihi0022/e/AMBA-AXI4-Lite-Interface-Specification)
+* [UVM Driver Use Models – Part 2](https://learnuvmverification.com/index.php/2015/10/28/uvm-driver-use-models-part-2/)
+

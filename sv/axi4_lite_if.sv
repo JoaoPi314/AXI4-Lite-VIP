@@ -46,7 +46,7 @@ interface axi4_lite_if #(
 
     // Master clocking block
     clocking master_cb @ (posedge clk);
-        default input #1 output negedge;
+        default input #1 output #1;
         output awvalid;
         output awaddr;
         output awprot;
@@ -63,7 +63,7 @@ interface axi4_lite_if #(
 
     // Slave clocking block
     clocking slave_cb @ (posedge clk);
-        default input #1 output negedge;
+        default input #1 output #1;
         output awready;
         output wready;
         output bvalid;

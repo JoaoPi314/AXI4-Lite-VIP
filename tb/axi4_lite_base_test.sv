@@ -11,10 +11,10 @@ class axi4_lite_base_test extends uvm_test;
     `uvm_component_utils(axi4_lite_base_test)
 
     // Components
-    axi4_lite_agent mst_agt;
-    axi4_lite_agent mst_rd_agt;
-    axi4_lite_agent slv_agt;
-    axi4_lite_agent slv_rd_agt;
+    axi4_lite_wr_agent mst_agt;
+    axi4_lite_rd_agent mst_rd_agt;
+    axi4_lite_wr_agent slv_agt;
+    axi4_lite_rd_agent slv_rd_agt;
     axi4_lite_agent_config mst_agt_cfg;
     axi4_lite_agent_config slv_agt_cfg;
 
@@ -47,15 +47,19 @@ function void axi4_lite_base_test::build_phase(uvm_phase phase);
     // Configures the agents
     mst_agt_cfg.is_master = 1'b1;
     slv_agt_cfg.is_master = 1'b0;
-    slv_agt_cfg.wr_addr_always_ready = 1'b0;
-    slv_agt_cfg.wr_data_always_ready = 1'b0;
-    mst_agt_cfg.wr_resp_always_ready = 1'b0;
+
+    // mst_agt_cfg.wr_resp_always_ready = 1'b1;
+    // slv_agt_cfg.wr_addr_always_ready = 1'b1;
+    // slv_agt_cfg.wr_data_always_ready = 1'b1;
+    // mst_agt_cfg.rd_data_always_ready = 1'b1;
+    // slv_agt_cfg.rd_addr_always_ready = 1'b1;
+
 
     // Creates the agents
-    mst_agt = axi4_lite_agent::type_id::create("mst_agt", this);
-    mst_rd_agt = axi4_lite_agent::type_id::create("mst_rd_agt", this);
-    slv_agt = axi4_lite_agent::type_id::create("slv_agt", this);
-    slv_rd_agt = axi4_lite_agent::type_id::create("slv_rd_agt", this);
+    mst_agt = axi4_lite_wr_agent::type_id::create("mst_agt", this);
+    mst_rd_agt = axi4_lite_rd_agent::type_id::create("mst_rd_agt", this);
+    slv_agt = axi4_lite_wr_agent::type_id::create("slv_agt", this);
+    slv_rd_agt = axi4_lite_rd_agent::type_id::create("slv_rd_agt", this);
 endfunction: build_phase
 
 

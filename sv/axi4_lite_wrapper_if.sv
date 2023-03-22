@@ -9,7 +9,7 @@ Description: AXI4-Lite parametrized interface
 ************************************************/
 
 
-interface axi4_lite_if #(
+interface axi4_lite_wrapper_if #(
     P_DATA_WIDTH = 32,
     P_ADDR_WIDTH = 8
 )(input clk, arst_n);
@@ -43,39 +43,4 @@ interface axi4_lite_if #(
     logic [P_DATA_WIDTH-1:0]    rdata;
     logic [1:0]                 rresp;
 
-
-    // Master clocking block
-    clocking master_cb @ (posedge clk);
-        default input #1 output #1;
-        output awvalid;
-        output awaddr;
-        output awprot;
-        output wvalid;
-        output wdata;
-        output wstrb;
-        output bready;
-        output arvalid;
-        output araddr;
-        output arprot;
-        output rready;
-    endclocking : master_cb
-
-    // Slave clocking block
-    clocking slave_cb @ (posedge clk);
-        default input #1 output #1;
-        output awready;
-        output wready;
-        output bvalid;
-        output bresp;
-        output arready;
-        output rvalid;
-        output rdata;
-        output rresp;
-        output araddr;
-    endclocking : slave_cb
-
-    // Modports
-    modport mst(clocking master_cb, input clk, arst_n, awready, wready, bvalid, bresp, arready, rvalid, rdata, rresp);
-    modport slv(clocking slave_cb, input clk, arst_n, awvalid, awaddr, awprot, wvalid, wdata, wstrb, bready, arvalid, araddr, arprot, rready);
-
-endinterface : axi4_lite_if
+endinterface : axi4_lite_wrapper_if

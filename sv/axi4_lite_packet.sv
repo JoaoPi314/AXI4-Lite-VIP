@@ -11,7 +11,7 @@ that will be driven to the DUT (Slave or Master AXI4-Lite)
 
 class axi4_lite_packet#(
     P_DATA_WIDTH = 32,
-    P_ADDR_WIDTH = 32
+    P_ADDR_WIDTH = 8
 ) extends uvm_sequence_item;
 
     // Address channel
@@ -20,7 +20,7 @@ class axi4_lite_packet#(
     
     // Data channel
     rand bit [P_DATA_WIDTH-1:0]     data;
-    rand bit [2:0]                  resp;
+    rand bit [1:0]                  resp;
     
     rand bit [P_DATA_WIDTH/8-1:0]   wstrb;
 
@@ -54,9 +54,6 @@ class axi4_lite_packet#(
     constraint no_privilege_secure_data_access {
         prot == 3'b010;
     }
-    // constraint default_resp{
-    //     resp == 'b0;
-    // }
 
     /**
     Function: update_wstrb

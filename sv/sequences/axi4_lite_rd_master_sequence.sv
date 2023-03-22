@@ -42,7 +42,7 @@ function void axi4_lite_rd_master_sequence::response_handler(uvm_sequence_item r
     else `uvm_error(get_type_name(), "Response isn't a axi4_lite packet")
     
     current_channel = rsp.active_channel;
-    `uvm_info(get_type_name(), $sformatf("Got Response from Driver - %s channel", current_channel.name()), UVM_LOW)
+    `uvm_info(get_type_name(), $sformatf("Got Response from Driver - %s channel", current_channel.name()), UVM_HIGH)
 
     if(current_channel == RD_DATA)
         unlock_next_read = 1'b1;

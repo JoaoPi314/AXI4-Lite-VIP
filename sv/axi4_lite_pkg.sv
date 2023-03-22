@@ -28,11 +28,16 @@ package axi4_lite_pkg;
   	`include "../sv/sequences/axi4_lite_rd_slave_sequence.sv"
   	`include "../sv/sequences/axi4_lite_wr_slave_sequence.sv"
 
-  	`include "../sv/agent/axi4_lite_base_driver.sv"
-  	`include "../sv/agent/axi4_lite_master_driver.sv"
-  	`include "../sv/agent/axi4_lite_slave_driver.sv"
+  	`include "../sv/agent/axi4_lite_base_wr_driver.sv"
+  	`include "../sv/agent/axi4_lite_base_rd_driver.sv"
+  	`include "../sv/agent/axi4_lite_master_wr_driver.sv"
+  	`include "../sv/agent/axi4_lite_master_rd_driver.sv"
+  	`include "../sv/agent/axi4_lite_slave_wr_driver.sv"
+  	`include "../sv/agent/axi4_lite_slave_rd_driver.sv"
     `include "../sv/agent/axi4_lite_agent_config.sv"
-    `include "../sv/agent/axi4_lite_agent.sv"
+    `include "../sv/agent/axi4_lite_wr_agent.sv"
+    `include "../sv/agent/axi4_lite_rd_agent.sv"
+
 
 	  `include "./axi4_lite_base_test.sv" 
 	  `include "./axi4_lite_write_test.sv" 

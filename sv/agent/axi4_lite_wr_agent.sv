@@ -1,7 +1,7 @@
 /********************************************** /
 AXI4-Lite VIP
 
-file: axi4_lite_agent.sv
+file: axi4_lite_wr_agent.sv
 author: João Pedro Melquiades Gomes
 mail: jmelquiadesgomes@gmail.com
 
@@ -10,16 +10,16 @@ driver and (if desired) the monitor. The configurations
 are passed to the driver via config_db.
 ***********************************************/ 
 
-class axi4_lite_agent extends uvm_agent;
-    `uvm_component_utils(axi4_lite_agent)
+class axi4_lite_wr_agent extends uvm_agent;
+    `uvm_component_utils(axi4_lite_wr_agent)
 
     // UVM components
     axi4_lite_agent_config agt_cfg;
 
-    axi4_lite_base_driver drv;
+    axi4_lite_base_wr_driver drv;
     axi4_lite_sequencer sqr;
 
-    function new(string name="axi4_lite_agent", uvm_component parent);
+    function new(string name="axi4_lite_wr_agent", uvm_component parent);
         super.new(name, parent);
     endfunction : new
 
@@ -28,11 +28,11 @@ class axi4_lite_agent extends uvm_agent;
    
     // Function: connect_phase
     extern function void connect_phase(uvm_phase phase);
-endclass : axi4_lite_agent
+endclass : axi4_lite_wr_agent
 
 
 
-function void axi4_lite_agent::build_phase(uvm_phase phase);
+function void axi4_lite_wr_agent::build_phase(uvm_phase phase);
     super.build_phase(phase);
     // Receives the configuration from the test or environment
     assert(uvm_config_db#(axi4_lite_agent_config)::get(this, "", "agt_cfg", this.agt_cfg))
@@ -44,22 +44,20 @@ function void axi4_lite_agent::build_phase(uvm_phase phase);
     uvm_config_db#(bit)::set(this, "drv", "wr_addr_always_ready", agt_cfg.wr_addr_always_ready);
     uvm_config_db#(bit)::set(this, "drv", "wr_data_always_ready", agt_cfg.wr_data_always_ready);
     uvm_config_db#(bit)::set(this, "drv", "wr_resp_always_ready", agt_cfg.wr_resp_always_ready);
-    uvm_config_db#(bit)::set(this, "drv", "rd_addr_always_ready", agt_cfg.rd_addr_always_ready);
-    uvm_config_db#(bit)::set(this, "drv", "rd_data_always_ready", agt_cfg.rd_data_always_ready);
 
     // Selects if the agent will be a master or slave
     if(!agt_cfg.is_master)
-        set_inst_override_by_type("*", axi4_lite_base_driver::get_type(), axi4_lite_slave_driver::get_type());
+        set_inst_override_by_type("*", axi4_lite_base_wr_driver::get_type(), axi4_lite_slave_wr_driver::get_type());
     else
-        set_inst_override_by_type("*", axi4_lite_base_driver::get_type(), axi4_lite_master_driver::get_type());
+        set_inst_override_by_type("*", axi4_lite_base_wr_driver::get_type(), axi4_lite_master_wr_driver::get_type());
 
     // Creates the other components
-    drv = axi4_lite_base_driver::type_id::create("drv", this);
+    drv = axi4_lite_base_wr_driver::type_id::create("drv", this);
     sqr = axi4_lite_sequencer::type_id::create("sqr", this);
 endfunction : build_phase
 
 
-function void axi4_lite_agent::connect_phase(uvm_phase phase);
+function void axi4_lite_wr_agent::connect_phase(uvm_phase phase);
     super.connect_phase(phase);
     drv.seq_item_port.connect(sqr.seq_item_export);
 endfunction : connect_phase

@@ -12,7 +12,9 @@ class axi4_lite_base_test extends uvm_test;
 
     // Components
     axi4_lite_agent mst_agt;
+    axi4_lite_agent mst_rd_agt;
     axi4_lite_agent slv_agt;
+    axi4_lite_agent slv_rd_agt;
     axi4_lite_agent_config mst_agt_cfg;
     axi4_lite_agent_config slv_agt_cfg;
 
@@ -37,8 +39,10 @@ function void axi4_lite_base_test::build_phase(uvm_phase phase);
     slv_agt_cfg = axi4_lite_agent_config::type_id::create("slv_agt_cfg", this);
 
     // Sets configuration to respective agents
-    uvm_config_db#(axi4_lite_agent_config)::set(null, "uvm_test_top.mst_agt", "agt_cfg", this.mst_agt_cfg);   
+    uvm_config_db#(axi4_lite_agent_config)::set(null, "uvm_test_top.mst_agt", "agt_cfg", this.mst_agt_cfg);
+    uvm_config_db#(axi4_lite_agent_config)::set(null, "uvm_test_top.mst_rd_agt", "agt_cfg", this.mst_agt_cfg);   
     uvm_config_db#(axi4_lite_agent_config)::set(null, "uvm_test_top.slv_agt", "agt_cfg", this.slv_agt_cfg);
+    uvm_config_db#(axi4_lite_agent_config)::set(null, "uvm_test_top.slv_rd_agt", "agt_cfg", this.slv_agt_cfg);
     
     // Configures the agents
     mst_agt_cfg.is_master = 1'b1;
@@ -49,7 +53,9 @@ function void axi4_lite_base_test::build_phase(uvm_phase phase);
 
     // Creates the agents
     mst_agt = axi4_lite_agent::type_id::create("mst_agt", this);
+    mst_rd_agt = axi4_lite_agent::type_id::create("mst_rd_agt", this);
     slv_agt = axi4_lite_agent::type_id::create("slv_agt", this);
+    slv_rd_agt = axi4_lite_agent::type_id::create("slv_rd_agt", this);
 endfunction: build_phase
 
 

@@ -31,7 +31,12 @@ class axi4_lite_master_driver extends axi4_lite_base_driver;
 
     // Task: drive_wr_resp_channel
     extern task automatic drive_wr_resp_channel(axi4_lite_packet pkt);
-
+    
+    // Task: drive_rd_addr_channel
+    extern task automatic drive_rd_addr_channel(axi4_lite_packet pkt);
+    
+    // Task: drive_rd_data_channel
+    extern task automatic drive_rd_data_channel(axi4_lite_packet pkt);
 endclass: axi4_lite_master_driver
 
 function void axi4_lite_master_driver::build_phase(uvm_phase phase);
@@ -62,14 +67,14 @@ task axi4_lite_master_driver::drive_wr_addr_channel(axi4_lite_packet pkt);
     
     // This channel cannot wait for the ready to raise the valid
     mst_vif.master_cb.awvalid <= 1'b1;
-    mst_vif.master_cb.awaddr <= req.addr;
+    mst_vif.master_cb.awaddr <= pkt.addr;
     pipeline_lock.put();
     
     @(posedge mst_vif.clk iff mst_vif.awready === 1'b1);
     mst_vif.master_cb.awvalid <= 1'b0;
 
     // Sends a response back to the sequence and unlocks the pipeline
-    seq_item_port.put_response(pkt);
+    seq_item_port.put(pkt);
 endtask : drive_wr_addr_channel
 
 task axi4_lite_master_driver::drive_wr_data_channel(axi4_lite_packet pkt);
@@ -77,8 +82,8 @@ task axi4_lite_master_driver::drive_wr_data_channel(axi4_lite_packet pkt);
 
     // This channel cannot wait for the ready to raise the valid
     mst_vif.master_cb.wvalid <= 1'b1;
-    mst_vif.master_cb.wdata <= req.data;
-    mst_vif.master_cb.wstrb <= req.wstrb;
+    mst_vif.master_cb.wdata <= pkt.data;
+    mst_vif.master_cb.wstrb <= pkt.wstrb;
 
     pipeline_lock.put();
     
@@ -86,7 +91,7 @@ task axi4_lite_master_driver::drive_wr_data_channel(axi4_lite_packet pkt);
     mst_vif.master_cb.wvalid <= 1'b0;
 
     // Sends a response back to the sequence and unlocks the pipeline
-    seq_item_port.put_response(pkt);
+    seq_item_port.put(pkt);
 endtask : drive_wr_data_channel
 
 
@@ -95,20 +100,55 @@ task axi4_lite_master_driver::drive_wr_resp_channel(axi4_lite_packet pkt);
 
     // This channel can wait for the slave to raise the ready
     if(wr_resp_always_ready) begin
-        // Unlocks the pipeline
-        pipeline_lock.put();
         @(posedge mst_vif.clk iff mst_vif.bvalid === 1'b1);
     end else begin
         if(req.handshake_type == WAIT_TO_SEND) begin
             @(posedge mst_vif.clk iff mst_vif.bvalid === 1'b1);
         end
-
+        
         mst_vif.master_cb.bready <= 1'b1;
-    
+        
         @(posedge mst_vif.clk iff mst_vif.bvalid === 1'b1);        
         mst_vif.master_cb.bready <= 1'b0;
     end
     // Sends a response back to the sequence
-    seq_item_port.put_response(pkt);
     pipeline_lock.put();
+    seq_item_port.put(pkt);
 endtask : drive_wr_resp_channel
+
+task axi4_lite_master_driver::drive_rd_addr_channel(axi4_lite_packet pkt);
+    `uvm_info(get_type_name(), $sformatf("Driving RD_ADDR channel: \n%s", req.sprint()), UVM_HIGH)
+    
+    // This channel cannot wait for the ready to raise the valid
+    mst_vif.master_cb.arvalid <= 1'b1;
+    mst_vif.master_cb.araddr <= pkt.addr;
+    pipeline_lock.put();
+    
+    @(posedge mst_vif.clk iff mst_vif.arready === 1'b1);
+    mst_vif.master_cb.arvalid <= 1'b0;
+
+    // Sends a response back to the sequence and unlocks the pipeline
+    seq_item_port.put(pkt);
+endtask : drive_rd_addr_channel
+
+
+task axi4_lite_master_driver::drive_rd_data_channel(axi4_lite_packet pkt);
+    `uvm_info(get_type_name(), $sformatf("Driving RD_DATA: \n%s", req.sprint()), UVM_HIGH)
+
+    // This channel can wait for the slave to raise the ready
+    if(rd_data_always_ready) begin
+        @(posedge mst_vif.clk iff mst_vif.rvalid === 1'b1);
+    end else begin
+        if(req.handshake_type == WAIT_TO_SEND) begin
+            @(posedge mst_vif.clk iff mst_vif.rvalid === 1'b1);
+        end
+        
+        mst_vif.master_cb.rready <= 1'b1;
+        
+        @(posedge mst_vif.clk iff mst_vif.rvalid === 1'b1);        
+        mst_vif.master_cb.rready <= 1'b0;
+    end
+    // Sends a response back to the sequence
+    pipeline_lock.put();
+    seq_item_port.put(pkt);
+endtask : drive_rd_data_channel

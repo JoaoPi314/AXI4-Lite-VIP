@@ -24,6 +24,8 @@ package axi4_lite_pkg;
     `include "../sv/axi4_lite_sequencer.sv"
   	`include "../sv/sequences/axi4_lite_base_sequence.sv"
   	`include "../sv/sequences/axi4_lite_wr_master_sequence.sv"
+  	`include "../sv/sequences/axi4_lite_rd_master_sequence.sv"
+  	`include "../sv/sequences/axi4_lite_rd_slave_sequence.sv"
   	`include "../sv/sequences/axi4_lite_wr_slave_sequence.sv"
 
   	`include "../sv/agent/axi4_lite_base_driver.sv"

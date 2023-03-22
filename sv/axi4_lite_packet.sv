@@ -54,9 +54,9 @@ class axi4_lite_packet#(
     constraint no_privilege_secure_data_access {
         prot == 3'b010;
     }
-    constraint default_resp{
-        resp == 'b0;
-    }
+    // constraint default_resp{
+    //     resp == 'b0;
+    // }
 
     /**
     Function: update_wstrb

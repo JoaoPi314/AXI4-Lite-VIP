@@ -31,6 +31,12 @@ class axi4_lite_slave_driver extends axi4_lite_base_driver;
 
     // Task: drive_wr_resp_channel
     extern task automatic drive_wr_resp_channel(axi4_lite_packet pkt);
+    
+    // Task: drive_rd_addr_channel
+    extern task automatic drive_rd_addr_channel(axi4_lite_packet pkt);
+    
+    // Task: drive_rd_data_channel
+    extern task automatic drive_rd_data_channel(axi4_lite_packet pkt);
 
 endclass : axi4_lite_slave_driver
 
@@ -77,7 +83,7 @@ task axi4_lite_slave_driver::drive_wr_addr_channel(axi4_lite_packet pkt);
         slv_vif.slave_cb.awready <= 1'b0;
     end
     // Sends response back to the sequence
-    seq_item_port.put_response(pkt);
+    seq_item_port.put(pkt);
 endtask : drive_wr_addr_channel
 
 task axi4_lite_slave_driver::drive_wr_data_channel(axi4_lite_packet pkt);
@@ -102,7 +108,7 @@ task axi4_lite_slave_driver::drive_wr_data_channel(axi4_lite_packet pkt);
         slv_vif.slave_cb.wready <= 1'b0;
     end
     // Sends response back to the sequence
-    seq_item_port.put_response(pkt);
+    seq_item_port.put(pkt);
 endtask : drive_wr_data_channel
 
 
@@ -111,7 +117,7 @@ task axi4_lite_slave_driver::drive_wr_resp_channel(axi4_lite_packet pkt);
     
     // This channel cannot wait the master to raise the valid
     slv_vif.slave_cb.bvalid <= 1'b1;
-    slv_vif.slave_cb.bresp <= req.resp;
+    slv_vif.slave_cb.bresp <= pkt.resp;
     
     // Unlocks pipeline
     pipeline_lock.put();
@@ -120,5 +126,49 @@ task axi4_lite_slave_driver::drive_wr_resp_channel(axi4_lite_packet pkt);
     slv_vif.slave_cb.bvalid<= 1'b0;
 
     // Sends response back to the sequence
-    seq_item_port.put_response(pkt);
+    seq_item_port.put(pkt);
 endtask : drive_wr_resp_channel
+
+
+task axi4_lite_slave_driver::drive_rd_addr_channel(axi4_lite_packet pkt);
+    `uvm_info(get_type_name(), $sformatf("Driving RD_ADDR channel: \n%s", req.sprint()), UVM_HIGH)
+
+    // This channel can wait for the master to raise the ready
+    if(rd_addr_always_ready) begin
+        //Unlocks pipeline
+        pipeline_lock.put();
+        @(posedge slv_vif.clk iff slv_vif.arvalid === 1'b1);
+    end else begin
+        if(req.handshake_type == WAIT_TO_SEND) begin
+            @(posedge slv_vif.clk iff (slv_vif.arvalid === 1'b1));
+        end
+    
+        slv_vif.slave_cb.arready <= 1'b1;
+    
+        //Unlocks pipeline
+        pipeline_lock.put();
+        
+        @(posedge slv_vif.clk iff slv_vif.arvalid === 1'b1);
+        slv_vif.slave_cb.arready <= 1'b0;
+    end
+    // Sends response back to the sequence
+    seq_item_port.put(pkt);
+endtask : drive_rd_addr_channel
+
+
+task axi4_lite_slave_driver::drive_rd_data_channel(axi4_lite_packet pkt);
+    `uvm_info(get_type_name(), $sformatf("Driving RD_DATA: \n%s", req.sprint()), UVM_HIGH)
+    
+    // This channel cannot wait the master to raise the valid
+    slv_vif.slave_cb.rvalid <= 1'b1;
+    slv_vif.slave_cb.rresp <= pkt.resp;
+    slv_vif.slave_cb.rdata <= pkt.data;
+    // Unlocks pipeline
+    pipeline_lock.put();
+
+    @(posedge slv_vif.clk iff slv_vif.rready === 1'b1);
+    slv_vif.slave_cb.rvalid<= 1'b0;
+
+    // Sends response back to the sequence
+    seq_item_port.put(pkt);
+endtask : drive_rd_data_channel

@@ -44,6 +44,8 @@ function void axi4_lite_agent::build_phase(uvm_phase phase);
     uvm_config_db#(bit)::set(this, "drv", "wr_addr_always_ready", agt_cfg.wr_addr_always_ready);
     uvm_config_db#(bit)::set(this, "drv", "wr_data_always_ready", agt_cfg.wr_data_always_ready);
     uvm_config_db#(bit)::set(this, "drv", "wr_resp_always_ready", agt_cfg.wr_resp_always_ready);
+    uvm_config_db#(bit)::set(this, "drv", "rd_addr_always_ready", agt_cfg.rd_addr_always_ready);
+    uvm_config_db#(bit)::set(this, "drv", "rd_data_always_ready", agt_cfg.rd_data_always_ready);
 
     // Selects if the agent will be a master or slave
     if(!agt_cfg.is_master)

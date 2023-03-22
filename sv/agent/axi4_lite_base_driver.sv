@@ -25,6 +25,8 @@ class axi4_lite_base_driver extends uvm_driver#(axi4_lite_packet);
     bit wr_addr_always_ready;
     bit wr_data_always_ready;
     bit wr_resp_always_ready;
+    bit rd_addr_always_ready;
+    bit rd_data_always_ready;
 
     function new(string name = "axi4_lite_base_driver", uvm_component parent);
         super.new(name, parent);
@@ -68,6 +70,22 @@ class axi4_lite_base_driver extends uvm_driver#(axi4_lite_packet);
     virtual task automatic drive_wr_resp_channel(axi4_lite_packet pkt);
     endtask
 
+    /*
+     * Task: drive_rd_addr_channel
+     * This task will be responsible for drive the ready into the
+     * read address channel of the AXI4 Lite
+     */
+     virtual task automatic drive_rd_addr_channel(axi4_lite_packet pkt);
+     endtask
+
+    /*
+     * Task: drive_rd_data_channel
+     * This task will be responsible for drive the ready into the
+     * read data channel of the AXI4 Lite
+     */
+     virtual task automatic drive_rd_data_channel(axi4_lite_packet pkt);
+     endtask
+
 endclass: axi4_lite_base_driver
 
 function void axi4_lite_base_driver::build_phase(uvm_phase phase);
@@ -89,6 +107,12 @@ function void axi4_lite_base_driver::build_phase(uvm_phase phase);
     assert(uvm_config_db#(bit)::get(this, "", "wr_resp_always_ready", wr_resp_always_ready))
         else `uvm_fatal(get_type_name(), "Failed to get agent configuration - wr_resp_always_ready")
 
+    assert(uvm_config_db#(bit)::get(this, "", "rd_addr_always_ready", rd_addr_always_ready))
+        else `uvm_fatal(get_type_name(), "Failed to get agent configuration - rd_addr_always_ready")
+
+    assert(uvm_config_db#(bit)::get(this, "", "rd_data_always_ready", rd_data_always_ready))
+        else `uvm_fatal(get_type_name(), "Failed to get agent configuration - rd_data_always_ready")
+
     assert(uvm_config_db#(axi4_lite_mst_vif)::get(this, "", "mst_vif", mst_vif))
         else `uvm_fatal(get_type_name(), "Failed to get virtual interface - mst")
 
@@ -106,25 +130,34 @@ task axi4_lite_base_driver::main_phase(uvm_phase phase);
         pipeline_selector(0);
         pipeline_selector(1);
         pipeline_selector(2);
+        pipeline_selector(3);
+        pipeline_selector(4);
     join
 endtask: main_phase
 
 
 task axi4_lite_base_driver::pipeline_selector(int id);
-
+    
+    
     axi4_lite_packet pkt = axi4_lite_packet::type_id::create("pkt");
-
     forever begin
+        
         #id pipeline_lock.get();
         seq_item_port.get(req);
-        pkt.copy(req);
+        $cast(pkt, req.clone());
+        pkt.set_id_info(req);
+
+        `uvm_info(get_type_name(), $sformatf("Driving %s channel in ID %d", pkt.active_channel.name(), id), UVM_NONE)
+        
         fork
             // Tries to make handshake with master/slave
             begin
                 case(req.active_channel)
-                    WR_ADDR: drive_wr_addr_channel(req);
-                    WR_DATA: drive_wr_data_channel(req);
-                    WR_RESP: drive_wr_resp_channel(req);
+                    WR_ADDR: drive_wr_addr_channel(pkt);
+                    WR_DATA: drive_wr_data_channel(pkt);
+                    WR_RESP: drive_wr_resp_channel(pkt);
+                    RD_ADDR: drive_rd_addr_channel(pkt);
+                    RD_DATA: drive_rd_data_channel(pkt);
                 endcase
             end
             // Waits to drop the channel if no response is received
@@ -144,6 +177,7 @@ task axi4_lite_base_driver::pipeline_selector(int id);
                 endcase
                 #id
                 pipeline_lock.put();
+                seq_item_port.put(pkt);
             end
         join_any
         // It's necessary to kill the non-finished process after one is finished

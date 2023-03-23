@@ -1,0 +1,66 @@
+/********************************************** /
+AXI4-Lite VIP
+
+file: topology.txt
+author: João Pedro Melquiades Gomes
+mail: jmelquiadesgomes@gmail.com
+
+Description: VIP topology running the test
+axi4_lite_vip_test.sv. Consult this file in order
+to see the instance names of the inner components
+************************************************/
+
+
+
+
+------------------------------------------------------------------
+Name                       Type                        Size  Value
+------------------------------------------------------------------
+uvm_test_top               axi4_lite_write_test        -     @2700
+  mst_env                  axi4_lite_env               -     @2783
+    rd_agent               axi4_lite_rd_agent          -     @2891
+      drv                  axi4_lite_master_rd_driver  -     @2972
+        rsp_port           uvm_analysis_port           -     @3073
+        seq_item_port      uvm_seq_item_pull_port      -     @3022
+      sqr                  axi4_lite_sequencer         -     @3107
+        rsp_export         uvm_analysis_export         -     @3165
+        seq_item_export    uvm_seq_item_pull_imp       -     @3713
+        arbitration_queue  array                       0     -    
+        lock_queue         array                       0     -    
+        num_last_reqs      integral                    32    'd1  
+        num_last_rsps      integral                    32    'd1  
+    wr_agent               axi4_lite_wr_agent          -     @2861
+      drv                  axi4_lite_master_wr_driver  -     @2970
+        rsp_port           uvm_analysis_port           -     @3913
+        seq_item_port      uvm_seq_item_pull_port      -     @3865
+      sqr                  axi4_lite_sequencer         -     @3945
+        rsp_export         uvm_analysis_export         -     @4001
+        seq_item_export    uvm_seq_item_pull_imp       -     @4541
+        arbitration_queue  array                       0     -    
+        lock_queue         array                       0     -    
+        num_last_reqs      integral                    32    'd1  
+        num_last_rsps      integral                    32    'd1  
+  slv_env                  axi4_lite_env               -     @2813
+    rd_agent               axi4_lite_rd_agent          -     @4594
+      drv                  axi4_lite_slave_rd_driver   -     @4687
+        rsp_port           uvm_analysis_port           -     @4782
+        seq_item_port      uvm_seq_item_pull_port      -     @4734
+      sqr                  axi4_lite_sequencer         -     @4813
+        rsp_export         uvm_analysis_export         -     @4869
+        seq_item_export    uvm_seq_item_pull_imp       -     @5409
+        arbitration_queue  array                       0     -    
+        lock_queue         array                       0     -    
+        num_last_reqs      integral                    32    'd1  
+        num_last_rsps      integral                    32    'd1  
+    wr_agent               axi4_lite_wr_agent          -     @4593
+      drv                  axi4_lite_slave_wr_driver   -     @5483
+        rsp_port           uvm_analysis_port           -     @5578
+        seq_item_port      uvm_seq_item_pull_port      -     @5530
+      sqr                  axi4_lite_sequencer         -     @5609
+        rsp_export         uvm_analysis_export         -     @5665
+        seq_item_export    uvm_seq_item_pull_imp       -     @6205
+        arbitration_queue  array                       0     -    
+        lock_queue         array                       0     -    
+        num_last_reqs      integral                    32    'd1  
+        num_last_rsps      integral                    32    'd1  
+------------------------------------------------------------------

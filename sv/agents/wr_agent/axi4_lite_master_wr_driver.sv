@@ -104,6 +104,7 @@ task axi4_lite_master_wr_driver::drive_wr_resp_channel(axi4_lite_packet pkt);
         @(posedge mst_vif.clk iff mst_vif.bvalid === 1'b1);        
         mst_vif.master_cb.bready <= 1'b0;
     end
+    
     // Sends a response back to the sequence
     pipeline_lock.put();
     seq_item_port.put(pkt);

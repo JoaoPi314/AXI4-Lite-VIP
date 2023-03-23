@@ -1,11 +1,13 @@
 /********************************************** /
 AXI4-Lite VIP
 
-file: axi4_lite_if.sv
+file: axi4_lite_wrapper__if.sv
 author: João Pedro Melquiades Gomes
 mail: jmelquiadesgomes@gmail.com
 
-Description: AXI4-Lite parametrized interface
+Description: AXI4-Lite generic interface without
+clocking blocks focused in convert the clocking
+block interface into a master/slave wrapped one
 ************************************************/
 
 

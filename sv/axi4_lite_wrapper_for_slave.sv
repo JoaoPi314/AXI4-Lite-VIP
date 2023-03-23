@@ -1,3 +1,14 @@
+/********************************************** /
+AXI4-Lite VIP
+
+file: axi4_lite_wrapper_for_slave.sv
+author: João Pedro Melquiades Gomes
+mail: jmelquiadesgomes@gmail.com
+
+Description: AXI4-Lite wrapper to drive interface to 
+a slave DUT (Prevent an error involving clocking blocks)
+************************************************/
+
 module axi4_lite_wrapper_for_slave(output_if, cb_if);
     axi4_lite_wrapper_if output_if;
     axi4_lite_if cb_if;

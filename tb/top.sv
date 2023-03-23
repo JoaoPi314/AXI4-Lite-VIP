@@ -20,10 +20,11 @@ module top;
   logic arst_n;
     
   // If driving into a DUT, connect the wrapper_if instead of the a4_lite_int
+  axi4_lite_if a4_lite_in(.clk(clk), .arst_n(arst_n));
+  
   axi4_lite_wrapper_if wrapper_if(.clk(clk), .arst_n(arst_n));
   axi4_lite_wrapper_for_slave wrapper_slv(.output_if(wrapper_if), .cb_if(a4_lite_in));
   
-  axi4_lite_if a4_lite_in(.clk(clk), .arst_n(arst_n));
 
   // axiDUT dut(
   //   .DUT_ACLK(clk),

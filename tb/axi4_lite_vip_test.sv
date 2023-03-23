@@ -1,17 +1,17 @@
 /********************************************** /
 AXI4-Lite VIP
 
-file: axi4_lite_write_test.sv
+file: axi4_lite_vip_test.sv
 author: João Pedro Melquiades Gomes
 mail: jmelquiadesgomes@gmail.com
 
 Description: Default test to check if the VIP can 
-perform write operations. One VIP master is connected
+perform write/read operations. One VIP master is connected
 with a VIP slave and them they communicate
 ************************************************/
 
-class axi4_lite_write_test extends axi4_lite_base_test;
-    `uvm_component_utils(axi4_lite_write_test)
+class axi4_lite_vip_test extends axi4_lite_base_test;
+    `uvm_component_utils(axi4_lite_vip_test)
     
     // Sequences
     axi4_lite_wr_master_sequence mst_seq;
@@ -20,7 +20,7 @@ class axi4_lite_write_test extends axi4_lite_base_test;
     axi4_lite_rd_slave_sequence slv_rd_seq;
     
   
-    function new(string name = "axi4_lite_write_test", uvm_component parent);
+    function new(string name = "axi4_lite_vip_test", uvm_component parent);
         super.new(name, parent);
     endfunction: new
 
@@ -30,13 +30,13 @@ class axi4_lite_write_test extends axi4_lite_base_test;
     // Task: main phase
     extern task main_phase(uvm_phase phase);
 
-endclass : axi4_lite_write_test
+endclass : axi4_lite_vip_test
 
-function void axi4_lite_write_test::build_phase(uvm_phase phase);
+function void axi4_lite_vip_test::build_phase(uvm_phase phase);
   	super.build_phase(phase);
 endfunction: build_phase
 
-task axi4_lite_write_test::main_phase(uvm_phase phase);
+task axi4_lite_vip_test::main_phase(uvm_phase phase);
     phase.raise_objection(this);
     
     // Creates the sequences

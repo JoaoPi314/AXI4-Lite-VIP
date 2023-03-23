@@ -34,7 +34,7 @@ endclass : axi4_lite_wr_agent
 
 function void axi4_lite_wr_agent::build_phase(uvm_phase phase);
     super.build_phase(phase);
-    // Receives the configuration from the test or environment
+    // Receives the configuration from environment
     assert(uvm_config_db#(axi4_lite_agent_config)::get(this, "", "agt_cfg", this.agt_cfg))
         else `uvm_fatal(get_type_name(), "Failed to config master or slave agent")
     

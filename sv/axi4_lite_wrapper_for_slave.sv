@@ -24,15 +24,10 @@ module axi4_lite_wrapper_for_slave(output_if, cb_if);
 
     always@(*)begin
         cb_if.awready = output_if.awready;
-
         cb_if.wready = output_if.wready;
-
-
         cb_if.bvalid = output_if.bvalid;
         cb_if.bresp = output_if.bresp;
-
         cb_if.arready = output_if.arready;
-
         cb_if.rvalid = output_if.rvalid;
         cb_if.rdata = output_if.rdata;
         cb_if.rresp = output_if.rresp;

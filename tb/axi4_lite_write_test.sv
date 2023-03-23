@@ -53,10 +53,10 @@ task axi4_lite_write_test::main_phase(uvm_phase phase);
     slv_rd_seq.num_of_transactions = 100;
 
     fork        
-        mst_seq.start(mst_agt.sqr);
-        slv_seq.start(slv_agt.sqr);
-        mst_rd_seq.start(mst_rd_agt.sqr);
-        slv_rd_seq.start(slv_rd_agt.sqr);
+        mst_seq.start(mst_env.wr_agent.sqr);
+        slv_seq.start(slv_env.wr_agent.sqr);
+        mst_rd_seq.start(mst_env.rd_agent.sqr);
+        slv_rd_seq.start(slv_env.rd_agent.sqr);
     join
     
     phase.phase_done.set_drain_time(this, 200);

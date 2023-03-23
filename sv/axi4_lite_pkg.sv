@@ -42,5 +42,5 @@ package axi4_lite_pkg;
 
 
 	`include "./axi4_lite_base_test.sv" 
-	`include "./axi4_lite_write_test.sv" 
+	`include "./axi4_lite_vip_test.sv" 
 endpackage : axi4_lite_pkg
